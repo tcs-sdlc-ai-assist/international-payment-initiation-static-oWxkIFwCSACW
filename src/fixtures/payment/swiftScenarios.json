@@ -1,0 +1,472 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A simulated SWIFT message preview or status progression may only be applied while the acting session holds the payment:operate capability; previews never carry raw banking details or PII, only masked identifiers, sanitized reason codes, and safe copy."
+  },
+  "latencyPolicy": {
+    "description": "Simulated SWIFT transmission and acknowledgement latency is bounded and clamped by the mock envelope layer; min_latency_ms and max_latency_ms are hints for deterministic demo behavior.",
+    "min_latency_ms": 200,
+    "max_latency_ms": 4000
+  },
+  "previewPolicy": {
+    "description": "Preview templates are deterministic and demo-safe. {ref} is a demo payment reference, {uetr} is a simulated UETR, {date} is an ISO date (YYYY-MM-DD), and {amount} is a formatted settlement amount. Field values are masked and never carry real routing instructions or account holder identity.",
+    "masked_field_placeholder": "••••",
+    "uetr_prefix": "demo-uetr",
+    "line_precision": 2
+  },
+  "messageTypes": [
+    {
+      "id": "pacs.008",
+      "label": "pacs.008 — FI to FI Customer Credit Transfer",
+      "description": "A simulated customer credit transfer message routing funds toward the beneficiary bank on behalf of the ordering customer.",
+      "cover_required": false
+    },
+    {
+      "id": "pacs.009",
+      "label": "pacs.009 — Financial Institution Credit Transfer (Cover)",
+      "description": "A simulated cover-payment message that settles the interbank leg between correspondents when a serial route is not used.",
+      "cover_required": true
+    }
+  ],
+  "routeTypes": [
+    {
+      "id": "serial",
+      "label": "Serial route",
+      "description": "Funds and payment instruction travel together through the correspondent chain; no separate cover message is required.",
+      "cover_required": false
+    },
+    {
+      "id": "cover",
+      "label": "Cover route",
+      "description": "The payment instruction (pacs.008) is sent directly to the beneficiary bank while a separate cover message (pacs.009) settles the interbank leg.",
+      "cover_required": true
+    }
+  ],
+  "transmissionStatuses": [
+    {
+      "id": "queued",
+      "label": "Queued",
+      "description": "The message is composed and waiting to be transmitted to the network.",
+      "terminal": false,
+      "blocking": false
+    },
+    {
+      "id": "transmitted",
+      "label": "Transmitted",
+      "description": "The message has been transmitted to the simulated SWIFT network and is awaiting acknowledgement.",
+      "terminal": false,
+      "blocking": false
+    },
+    {
+      "id": "acknowledged",
+      "label": "Acknowledged (ACK)",
+      "description": "The network positively acknowledged the message; it was accepted for onward delivery.",
+      "terminal": true,
+      "blocking": false
+    },
+    {
+      "id": "rejected",
+      "label": "Rejected (NAK)",
+      "description": "The network negatively acknowledged the message; it was rejected and not delivered.",
+      "terminal": true,
+      "blocking": true
+    },
+    {
+      "id": "repair",
+      "label": "Repair required",
+      "description": "The message was returned for repair because of a correctable data issue and must be resubmitted.",
+      "terminal": false,
+      "blocking": true
+    }
+  ],
+  "reasonCodes": [
+    {
+      "id": "swift.transmitted",
+      "label": "Transmitted",
+      "description": "The message was transmitted to the simulated network.",
+      "severity": "info",
+      "blocking": false
+    },
+    {
+      "id": "swift.ack",
+      "label": "Positive acknowledgement",
+      "description": "The network acknowledged the message and accepted it for delivery.",
+      "severity": "info",
+      "blocking": false
+    },
+    {
+      "id": "swift.nak.format",
+      "label": "Format rejection",
+      "description": "The message was rejected because it failed network format validation.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "swift.nak.field",
+      "label": "Field rejection",
+      "description": "The message was rejected because a mandatory field was missing or malformed.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "swift.repair.beneficiary",
+      "label": "Beneficiary repair",
+      "description": "The beneficiary details require correction before the message can be retransmitted.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "swift.repair.correspondent",
+      "label": "Correspondent repair",
+      "description": "The correspondent or routing details require correction before the message can be retransmitted.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "swift.unavailable",
+      "label": "Network unavailable",
+      "description": "The simulated SWIFT network is temporarily unavailable and produced no result.",
+      "severity": "warning",
+      "blocking": true
+    }
+  ],
+  "previewTemplates": [
+    {
+      "id": "pacs008-preview",
+      "message_type": "pacs.008",
+      "label": "pacs.008 customer credit transfer preview",
+      "lines": [
+        { "tag": "GrpHdr/MsgId", "label": "Message identifier", "template": "demo-msg-{ref}" },
+        { "tag": "GrpHdr/CreDtTm", "label": "Creation date-time", "template": "{date}T09:00:00Z" },
+        { "tag": "CdtTrfTxInf/PmtId/UETR", "label": "UETR", "template": "demo-uetr-{uetr}" },
+        { "tag": "CdtTrfTxInf/IntrBkSttlmAmt", "label": "Interbank settlement amount", "template": "{amount}" },
+        { "tag": "CdtTrfTxInf/Dbtr/Nm", "label": "Debtor name", "template": "••••" },
+        { "tag": "CdtTrfTxInf/DbtrAcct/Id", "label": "Debtor account", "template": "••••" },
+        { "tag": "CdtTrfTxInf/DbtrAgt/BICFI", "label": "Debtor agent BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/CdtrAgt/BICFI", "label": "Creditor agent BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/Cdtr/Nm", "label": "Creditor name", "template": "••••" },
+        { "tag": "CdtTrfTxInf/CdtrAcct/Id", "label": "Creditor account", "template": "••••" },
+        { "tag": "CdtTrfTxInf/RmtInf/Ustrd", "label": "Remittance information", "template": "•••••••" }
+      ]
+    },
+    {
+      "id": "pacs009-preview",
+      "message_type": "pacs.009",
+      "label": "pacs.009 cover-payment preview",
+      "lines": [
+        { "tag": "GrpHdr/MsgId", "label": "Message identifier", "template": "demo-cover-{ref}" },
+        { "tag": "GrpHdr/CreDtTm", "label": "Creation date-time", "template": "{date}T09:00:00Z" },
+        { "tag": "CdtTrfTxInf/PmtId/UETR", "label": "UETR", "template": "demo-uetr-{uetr}" },
+        { "tag": "CdtTrfTxInf/IntrBkSttlmAmt", "label": "Interbank settlement amount", "template": "{amount}" },
+        { "tag": "CdtTrfTxInf/Dbtr/BICFI", "label": "Debtor institution BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/DbtrAgt/BICFI", "label": "Debtor agent BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/CdtrAgt/BICFI", "label": "Creditor agent BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/Cdtr/BICFI", "label": "Creditor institution BIC", "template": "••••••" },
+        { "tag": "CdtTrfTxInf/UndrlygCstmrCdtTrf/InstdAmt", "label": "Underlying instructed amount", "template": "{amount}" }
+      ]
+    }
+  ],
+  "routeDeterminations": [
+    {
+      "determination_id": "demo-route-eur-usd-01",
+      "label": "EUR-USD Serial Route Determination",
+      "pair_id": "EUR-USD",
+      "source_currency": "EUR",
+      "beneficiary_currency": "USD",
+      "route_type": "serial",
+      "cover_required": false,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": null,
+      "nostro_id": "demo-nostro-usd-01",
+      "correspondent_id": "demo-corr-usd-01",
+      "intermediary_id": "demo-inter-usd-01",
+      "description": "A direct correspondent relationship exists, so the instruction travels serially and no separate cover message is required.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-route-eur-gbp-01",
+      "label": "EUR-GBP Serial Route Determination",
+      "pair_id": "EUR-GBP",
+      "source_currency": "EUR",
+      "beneficiary_currency": "GBP",
+      "route_type": "serial",
+      "cover_required": false,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": null,
+      "nostro_id": "demo-nostro-gbp-01",
+      "correspondent_id": "demo-corr-gbp-01",
+      "intermediary_id": null,
+      "description": "A direct correspondent relationship exists for the GBP leg, so the instruction travels serially with no cover message.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:05:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-route-usd-eur-01",
+      "label": "USD-EUR Cover Route Determination",
+      "pair_id": "USD-EUR",
+      "source_currency": "USD",
+      "beneficiary_currency": "EUR",
+      "route_type": "cover",
+      "cover_required": true,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": "pacs.009",
+      "nostro_id": "demo-nostro-eur-01",
+      "correspondent_id": "demo-corr-eur-01",
+      "intermediary_id": "demo-inter-eur-01",
+      "description": "The instruction is sent directly to the beneficiary bank while a separate pacs.009 cover message settles the interbank leg through the correspondent.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:10:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-route-usd-gbp-01",
+      "label": "USD-GBP Cover Route Determination",
+      "pair_id": "USD-GBP",
+      "source_currency": "USD",
+      "beneficiary_currency": "GBP",
+      "route_type": "cover",
+      "cover_required": true,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": "pacs.009",
+      "nostro_id": "demo-nostro-gbp-01",
+      "correspondent_id": "demo-corr-gbp-01",
+      "intermediary_id": "demo-inter-gbp-01",
+      "description": "No direct route is available, so a pacs.009 cover message accompanies the pacs.008 instruction to settle the interbank leg.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:15:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-route-gbp-eur-01",
+      "label": "GBP-EUR Cover Route Determination",
+      "pair_id": "GBP-EUR",
+      "source_currency": "GBP",
+      "beneficiary_currency": "EUR",
+      "route_type": "cover",
+      "cover_required": true,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": "pacs.009",
+      "nostro_id": "demo-nostro-eur-01",
+      "correspondent_id": "demo-corr-eur-01",
+      "intermediary_id": "demo-inter-eur-01",
+      "description": "A pacs.009 cover message settles the interbank leg while the pacs.008 instruction reaches the beneficiary bank directly.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:20:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-route-gbp-usd-01",
+      "label": "GBP-USD Serial Route Determination",
+      "pair_id": "GBP-USD",
+      "source_currency": "GBP",
+      "beneficiary_currency": "USD",
+      "route_type": "serial",
+      "cover_required": false,
+      "primary_message_type": "pacs.008",
+      "cover_message_type": null,
+      "nostro_id": "demo-nostro-usd-01",
+      "correspondent_id": "demo-corr-usd-01",
+      "intermediary_id": "demo-inter-usd-01",
+      "description": "A direct correspondent relationship exists for the USD leg, so the instruction travels serially with no cover message.",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:25:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    }
+  ],
+  "defaultRouteDetermination": {
+    "determination_id": "demo-route-default",
+    "label": "Standard default route determination",
+    "description": "Fallback route applied when no specific pair matches; routes serially via a currency-appropriate correspondent and does not require a cover message.",
+    "route_type": "serial",
+    "cover_required": false,
+    "primary_message_type": "pacs.008",
+    "cover_message_type": null,
+    "nostro_id": "demo-nostro-usd-01",
+    "correspondent_id": "demo-corr-usd-01",
+    "intermediary_id": null,
+    "status": "active"
+  },
+  "scenarios": [
+    {
+      "scenario_ref": "demo-scn-swift-ack",
+      "message_type": "pacs.008",
+      "route_type": "serial",
+      "cover_required": false,
+      "final_status": "acknowledged",
+      "mock_status": "success",
+      "safe_reason_code": "swift.ack",
+      "min_latency_ms": 400,
+      "max_latency_ms": 1800,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": null,
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 400 },
+        { "status": "acknowledged", "safe_reason_code": "swift.ack", "occurred_offset_ms": 1200 }
+      ],
+      "next_step": {
+        "title": "Message acknowledged",
+        "body": "The simulated SWIFT network acknowledged this pacs.008 message and accepted it for onward delivery.",
+        "action_label": "Continue to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-ack-cover",
+      "message_type": "pacs.008",
+      "route_type": "cover",
+      "cover_required": true,
+      "final_status": "acknowledged",
+      "mock_status": "success",
+      "safe_reason_code": "swift.ack",
+      "min_latency_ms": 500,
+      "max_latency_ms": 2200,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": "pacs009-preview",
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 500 },
+        { "status": "acknowledged", "safe_reason_code": "swift.ack", "occurred_offset_ms": 1600 }
+      ],
+      "next_step": {
+        "title": "Cover payment acknowledged",
+        "body": "Both the pacs.008 instruction and the accompanying pacs.009 cover message were acknowledged by the simulated network.",
+        "action_label": "Continue to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-nak-format",
+      "message_type": "pacs.008",
+      "route_type": "serial",
+      "cover_required": false,
+      "final_status": "rejected",
+      "mock_status": "error",
+      "safe_reason_code": "swift.nak.format",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1400,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": null,
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 300 },
+        { "status": "rejected", "safe_reason_code": "swift.nak.format", "occurred_offset_ms": 900 }
+      ],
+      "next_step": {
+        "title": "Message rejected",
+        "body": "The simulated network rejected this message because it failed format validation. No funds were moved — correct the message and retransmit.",
+        "action_label": "Return to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-nak-field",
+      "message_type": "pacs.008",
+      "route_type": "serial",
+      "cover_required": false,
+      "final_status": "rejected",
+      "mock_status": "error",
+      "safe_reason_code": "swift.nak.field",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1400,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": null,
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 300 },
+        { "status": "rejected", "safe_reason_code": "swift.nak.field", "occurred_offset_ms": 900 }
+      ],
+      "next_step": {
+        "title": "Message rejected",
+        "body": "The simulated network rejected this message because a mandatory field was missing or malformed. No funds were moved — correct the field and retransmit.",
+        "action_label": "Return to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-repair-beneficiary",
+      "message_type": "pacs.008",
+      "route_type": "serial",
+      "cover_required": false,
+      "final_status": "repair",
+      "mock_status": "error",
+      "safe_reason_code": "swift.repair.beneficiary",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1500,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": null,
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 300 },
+        { "status": "repair", "safe_reason_code": "swift.repair.beneficiary", "occurred_offset_ms": 1000 }
+      ],
+      "next_step": {
+        "title": "Beneficiary details need repair",
+        "body": "The message was returned for repair because the beneficiary details require correction. Repair the details and retransmit.",
+        "action_label": "Repair payment",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-repair-correspondent",
+      "message_type": "pacs.009",
+      "route_type": "cover",
+      "cover_required": true,
+      "final_status": "repair",
+      "mock_status": "error",
+      "safe_reason_code": "swift.repair.correspondent",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1500,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": "pacs009-preview",
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 400 },
+        { "status": "repair", "safe_reason_code": "swift.repair.correspondent", "occurred_offset_ms": 1100 }
+      ],
+      "next_step": {
+        "title": "Correspondent details need repair",
+        "body": "The cover message was returned for repair because the correspondent or routing details require correction. Repair the routing and retransmit.",
+        "action_label": "Repair payment",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-swift-unavailable",
+      "message_type": "pacs.008",
+      "route_type": "serial",
+      "cover_required": false,
+      "final_status": "repair",
+      "mock_status": "error",
+      "safe_reason_code": "swift.unavailable",
+      "min_latency_ms": 600,
+      "max_latency_ms": 3200,
+      "preview_template_id": "pacs008-preview",
+      "cover_preview_template_id": null,
+      "progression": [
+        { "status": "queued", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 0 },
+        { "status": "transmitted", "safe_reason_code": "swift.transmitted", "occurred_offset_ms": 600 },
+        { "status": "repair", "safe_reason_code": "swift.unavailable", "occurred_offset_ms": 2000 }
+      ],
+      "next_step": {
+        "title": "Network unavailable",
+        "body": "The simulated SWIFT network is temporarily unavailable and produced no result. Wait a moment and try transmitting again.",
+        "action_label": "Try again",
+        "action_route": "/payments/operations"
+      }
+    }
+  ]
+}

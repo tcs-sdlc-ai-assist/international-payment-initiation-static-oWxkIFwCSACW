@@ -1,0 +1,428 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A source account is only selectable when the acting session's account_scopes include the account_id; balances and numbers are simulated and masked, and never carry raw banking details."
+  },
+  "currencies": [
+    {
+      "id": "EUR",
+      "label": "Euro",
+      "symbol": "€",
+      "minor_units": 2
+    },
+    {
+      "id": "USD",
+      "label": "US Dollar",
+      "symbol": "$",
+      "minor_units": 2
+    },
+    {
+      "id": "GBP",
+      "label": "Pound Sterling",
+      "symbol": "£",
+      "minor_units": 2
+    }
+  ],
+  "customerSegments": [
+    {
+      "id": "corporate",
+      "label": "Corporate",
+      "description": "Large corporate treasury relationship."
+    },
+    {
+      "id": "commercial",
+      "label": "Commercial",
+      "description": "Mid-market commercial banking relationship."
+    },
+    {
+      "id": "small_business",
+      "label": "Small Business",
+      "description": "Small business banking relationship."
+    }
+  ],
+  "products": [
+    {
+      "id": "current_account",
+      "label": "Current Account",
+      "description": "Operating current account for day-to-day payments."
+    },
+    {
+      "id": "fx_settlement",
+      "label": "FX Settlement Account",
+      "description": "Dedicated account for foreign-exchange settlement."
+    },
+    {
+      "id": "collections",
+      "label": "Collections Account",
+      "description": "Account used for incoming collections and receivables."
+    }
+  ],
+  "channels": [
+    {
+      "id": "online_banking",
+      "label": "Online Banking",
+      "description": "Self-service web channel."
+    },
+    {
+      "id": "host_to_host",
+      "label": "Host-to-Host",
+      "description": "Automated host-to-host file channel."
+    },
+    {
+      "id": "relationship_desk",
+      "label": "Relationship Desk",
+      "description": "Assisted relationship-manager channel."
+    }
+  ],
+  "accounts": [
+    {
+      "account_id": "demo-acct-eur-01",
+      "account_name": "Demo Global Payments EUR Operating",
+      "account_number_masked": "••••4021",
+      "currency": "EUR",
+      "available_balance": 1284500.75,
+      "supported_beneficiary_currencies": ["EUR", "USD", "GBP"],
+      "customer_segment": "corporate",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-01",
+      "account_name": "Demo Global Payments USD Operating",
+      "account_number_masked": "••••7788",
+      "currency": "USD",
+      "available_balance": 2045120.4,
+      "supported_beneficiary_currencies": ["USD", "EUR", "GBP"],
+      "customer_segment": "corporate",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:05:00.000Z",
+      "updated_at": "2026-07-28T08:15:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-01",
+      "account_name": "Demo Global Payments GBP Operating",
+      "account_number_masked": "••••1163",
+      "currency": "GBP",
+      "available_balance": 875340.1,
+      "supported_beneficiary_currencies": ["GBP", "EUR", "USD"],
+      "customer_segment": "corporate",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:10:00.000Z",
+      "updated_at": "2026-07-26T14:20:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-02",
+      "account_name": "Demo Global Payments EUR FX Settlement",
+      "account_number_masked": "••••5507",
+      "currency": "EUR",
+      "available_balance": 642180.55,
+      "supported_beneficiary_currencies": ["EUR", "USD", "GBP"],
+      "customer_segment": "corporate",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-03T09:00:00.000Z",
+      "updated_at": "2026-07-25T11:45:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-02",
+      "account_name": "Demo Global Payments USD FX Settlement",
+      "account_number_masked": "••••9032",
+      "currency": "USD",
+      "available_balance": 1310990.0,
+      "supported_beneficiary_currencies": ["USD", "EUR", "GBP"],
+      "customer_segment": "corporate",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-03T09:05:00.000Z",
+      "updated_at": "2026-07-24T10:05:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-02",
+      "account_name": "Demo Global Payments GBP FX Settlement",
+      "account_number_masked": "••••4419",
+      "currency": "GBP",
+      "available_balance": 498760.25,
+      "supported_beneficiary_currencies": ["GBP", "EUR", "USD"],
+      "customer_segment": "corporate",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-03T09:10:00.000Z",
+      "updated_at": "2026-07-23T13:30:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-03",
+      "account_name": "Northwind Trading EUR Collections",
+      "account_number_masked": "••••2280",
+      "currency": "EUR",
+      "available_balance": 312450.9,
+      "supported_beneficiary_currencies": ["EUR", "USD"],
+      "customer_segment": "commercial",
+      "product": "collections",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-18T09:00:00.000Z",
+      "updated_at": "2026-07-22T09:40:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-03",
+      "account_name": "Northwind Trading USD Collections",
+      "account_number_masked": "••••6714",
+      "currency": "USD",
+      "available_balance": 458920.35,
+      "supported_beneficiary_currencies": ["USD", "EUR"],
+      "customer_segment": "commercial",
+      "product": "collections",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-18T09:05:00.000Z",
+      "updated_at": "2026-07-21T15:25:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-03",
+      "account_name": "Northwind Trading GBP Collections",
+      "account_number_masked": "••••3357",
+      "currency": "GBP",
+      "available_balance": 221870.6,
+      "supported_beneficiary_currencies": ["GBP", "EUR"],
+      "customer_segment": "commercial",
+      "product": "collections",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-02-18T09:10:00.000Z",
+      "updated_at": "2026-07-20T12:10:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-04",
+      "account_name": "Aurora Logistics EUR Current",
+      "account_number_masked": "••••8845",
+      "currency": "EUR",
+      "available_balance": 154320.2,
+      "supported_beneficiary_currencies": ["EUR", "USD", "GBP"],
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-05T09:00:00.000Z",
+      "updated_at": "2026-07-19T11:25:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-04",
+      "account_name": "Aurora Logistics USD Current",
+      "account_number_masked": "••••1902",
+      "currency": "USD",
+      "available_balance": 198450.85,
+      "supported_beneficiary_currencies": ["USD", "EUR", "GBP"],
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-05T09:05:00.000Z",
+      "updated_at": "2026-07-18T14:00:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-04",
+      "account_name": "Aurora Logistics GBP Current",
+      "account_number_masked": "••••7361",
+      "currency": "GBP",
+      "available_balance": 87650.45,
+      "supported_beneficiary_currencies": ["GBP", "EUR", "USD"],
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-05T09:10:00.000Z",
+      "updated_at": "2026-07-17T10:35:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-05",
+      "account_name": "Meridian Foods EUR FX Settlement",
+      "account_number_masked": "••••5528",
+      "currency": "EUR",
+      "available_balance": 76540.3,
+      "supported_beneficiary_currencies": ["EUR", "GBP"],
+      "customer_segment": "commercial",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-22T09:00:00.000Z",
+      "updated_at": "2026-07-16T09:10:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-05",
+      "account_name": "Meridian Foods USD FX Settlement",
+      "account_number_masked": "••••4093",
+      "currency": "USD",
+      "available_balance": 112380.7,
+      "supported_beneficiary_currencies": ["USD", "GBP"],
+      "customer_segment": "commercial",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-22T09:05:00.000Z",
+      "updated_at": "2026-07-15T12:10:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-05",
+      "account_name": "Meridian Foods GBP FX Settlement",
+      "account_number_masked": "••••2216",
+      "currency": "GBP",
+      "available_balance": 64210.15,
+      "supported_beneficiary_currencies": ["GBP", "EUR"],
+      "customer_segment": "commercial",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-03-22T09:10:00.000Z",
+      "updated_at": "2026-07-14T11:20:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-06",
+      "account_name": "Cedar & Stone EUR Current",
+      "account_number_masked": "••••9974",
+      "currency": "EUR",
+      "available_balance": 43980.5,
+      "supported_beneficiary_currencies": ["EUR", "USD"],
+      "customer_segment": "small_business",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-10T09:00:00.000Z",
+      "updated_at": "2026-07-13T15:50:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-06",
+      "account_name": "Cedar & Stone USD Current",
+      "account_number_masked": "••••3340",
+      "currency": "USD",
+      "available_balance": 58720.9,
+      "supported_beneficiary_currencies": ["USD", "EUR"],
+      "customer_segment": "small_business",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-10T09:05:00.000Z",
+      "updated_at": "2026-07-12T16:15:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-06",
+      "account_name": "Cedar & Stone GBP Current",
+      "account_number_masked": "••••8107",
+      "currency": "GBP",
+      "available_balance": 31450.25,
+      "supported_beneficiary_currencies": ["GBP", "EUR"],
+      "customer_segment": "small_business",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-10T09:10:00.000Z",
+      "updated_at": "2026-07-11T12:00:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-07",
+      "account_name": "Solaris Retail EUR Collections",
+      "account_number_masked": "••••6652",
+      "currency": "EUR",
+      "available_balance": 27890.6,
+      "supported_beneficiary_currencies": ["EUR"],
+      "customer_segment": "small_business",
+      "product": "collections",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-28T09:00:00.000Z",
+      "updated_at": "2026-07-10T10:05:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-07",
+      "account_name": "Solaris Retail USD Collections",
+      "account_number_masked": "••••1478",
+      "currency": "USD",
+      "available_balance": 39120.35,
+      "supported_beneficiary_currencies": ["USD", "EUR"],
+      "customer_segment": "small_business",
+      "product": "collections",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-28T09:05:00.000Z",
+      "updated_at": "2026-07-09T13:10:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-gbp-07",
+      "account_name": "Solaris Retail GBP Collections",
+      "account_number_masked": "••••5093",
+      "currency": "GBP",
+      "available_balance": 18760.8,
+      "supported_beneficiary_currencies": ["GBP"],
+      "customer_segment": "small_business",
+      "product": "collections",
+      "channel": "relationship_desk",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-04-28T09:10:00.000Z",
+      "updated_at": "2026-07-08T13:10:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-eur-08",
+      "account_name": "Harbour Legacy EUR Current",
+      "account_number_masked": "••••7749",
+      "currency": "EUR",
+      "available_balance": 0.0,
+      "supported_beneficiary_currencies": ["EUR", "USD", "GBP"],
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "dormant",
+      "created_at": "2026-05-15T09:00:00.000Z",
+      "updated_at": "2026-07-06T14:25:00.000Z"
+    },
+    {
+      "account_id": "demo-acct-usd-08",
+      "account_name": "Harbour Legacy USD Current",
+      "account_number_masked": "••••2865",
+      "currency": "USD",
+      "available_balance": 1250.0,
+      "supported_beneficiary_currencies": ["USD"],
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "online_banking",
+      "organization_id": "demo-org-01",
+      "status": "restricted",
+      "created_at": "2026-05-15T09:05:00.000Z",
+      "updated_at": "2026-07-05T09:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="International Payment Initiation">
+  <rect width="32" height="32" rx="6" fill="#00468b" />
+  <path d="M8 20h13M8 20l3-3M8 20l3 3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M24 12H11M24 12l-3-3M24 12l-3 3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "roles": [
+    {
+      "role": "initiator",
+      "display_name": "Payment Initiator",
+      "description": "Creates and submits international payment drafts for approval.",
+      "capabilities": ["payment:initiate"],
+      "default_masking_policy_id": "list",
+      "default_route": "/payments/new",
+      "created_at": "2026-06-28T09:00:00.000Z"
+    },
+    {
+      "role": "approver",
+      "display_name": "Payment Approver",
+      "description": "Reviews and approves submitted payments before release.",
+      "capabilities": ["payment:approve"],
+      "default_masking_policy_id": "confirmation",
+      "default_route": "/payments/approvals",
+      "created_at": "2026-06-28T09:05:00.000Z"
+    },
+    {
+      "role": "operator",
+      "display_name": "Payment Operator",
+      "description": "Operates approved payments and reads signer entitlements.",
+      "capabilities": ["payment:operate", "signer.read"],
+      "default_masking_policy_id": "detail",
+      "default_route": "/payments/operations",
+      "created_at": "2026-06-28T09:10:00.000Z"
+    },
+    {
+      "role": "signer-admin",
+      "display_name": "Signer Administrator",
+      "description": "Reads and manages signer entitlements and capability overrides.",
+      "capabilities": ["signer.read", "signer.manage"],
+      "default_masking_policy_id": "audit",
+      "default_route": "/signers",
+      "created_at": "2026-06-28T09:15:00.000Z"
+    },
+    {
+      "role": "auditor",
+      "display_name": "Auditor",
+      "description": "Reads signer entitlements and audit trails; no mutating capabilities.",
+      "capabilities": ["signer.read"],
+      "default_masking_policy_id": "audit",
+      "default_route": "/audit",
+      "created_at": "2026-06-28T09:20:00.000Z"
+    }
+  ],
+  "capabilities": [
+    {
+      "capability": "payment:initiate",
+      "display_name": "Initiate Payment",
+      "description": "Create and submit international payment drafts."
+    },
+    {
+      "capability": "payment:approve",
+      "display_name": "Approve Payment",
+      "description": "Approve or reject submitted payments before release."
+    },
+    {
+      "capability": "payment:operate",
+      "display_name": "Operate Payment",
+      "description": "Progress, hold, or release approved payment operations."
+    },
+    {
+      "capability": "signer.read",
+      "display_name": "Read Signer Entitlements",
+      "description": "View signer entitlements and capability assignments."
+    },
+    {
+      "capability": "signer.manage",
+      "display_name": "Manage Signer Entitlements",
+      "description": "Create, update, and revoke signer entitlement overrides."
+    }
+  ],
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "Access is denied unless a role explicitly grants the required capability."
+  }
+}

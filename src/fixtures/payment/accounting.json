@@ -1,0 +1,670 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A nostro, correspondent, intermediary, or ledger account is only usable when its status is active, its currency matches the applicable posting leg, and the acting session holds the payment:operate capability; all identifiers are simulated and masked, and never carry raw banking details or real settlement instructions."
+  },
+  "postingPolicy": {
+    "description": "Posting reference templates are deterministic and demo-safe; {seq} is a zero-padded sequence, {date} is an ISO date (YYYY-MM-DD), and {ref} is a demo payment reference. Ledger postings always balance debits against credits within a settlement group and never carry PII.",
+    "reference_prefix": "demo-post",
+    "sequence_padding": 6,
+    "settlement_precision": 2,
+    "rounding_mode": "half_even"
+  },
+  "currencies": [
+    {
+      "id": "EUR",
+      "label": "Euro",
+      "symbol": "€",
+      "minor_units": 2
+    },
+    {
+      "id": "USD",
+      "label": "US Dollar",
+      "symbol": "$",
+      "minor_units": 2
+    },
+    {
+      "id": "GBP",
+      "label": "Pound Sterling",
+      "symbol": "£",
+      "minor_units": 2
+    }
+  ],
+  "accountRoles": [
+    {
+      "id": "nostro",
+      "label": "Nostro Account",
+      "description": "A simulated account the ordering institution holds with a correspondent bank in the beneficiary currency."
+    },
+    {
+      "id": "correspondent",
+      "label": "Correspondent Bank",
+      "description": "A simulated correspondent institution that maintains the nostro relationship and effects onward settlement."
+    },
+    {
+      "id": "intermediary",
+      "label": "Intermediary Bank",
+      "description": "A simulated intermediary institution routing funds toward the beneficiary bank when no direct relationship exists."
+    },
+    {
+      "id": "settlement",
+      "label": "Settlement Ledger",
+      "description": "An internal ledger account used to record settlement legs of a payment."
+    },
+    {
+      "id": "fees",
+      "label": "Fees Ledger",
+      "description": "An internal ledger account used to record charged transaction fees."
+    },
+    {
+      "id": "fx",
+      "label": "FX Ledger",
+      "description": "An internal ledger account used to record foreign-exchange conversion legs."
+    },
+    {
+      "id": "customer",
+      "label": "Customer Ledger",
+      "description": "An internal ledger account used to record the customer debit posting for a payment."
+    }
+  ],
+  "ledgerAccountTypes": [
+    {
+      "id": "customer_posting",
+      "label": "Customer Posting",
+      "description": "Records the customer debit for the instructed payment amount."
+    },
+    {
+      "id": "fee_posting",
+      "label": "Fee Posting",
+      "description": "Records the charged transaction fee for the payment."
+    },
+    {
+      "id": "fx_posting",
+      "label": "FX Posting",
+      "description": "Records the foreign-exchange conversion between source and beneficiary currency legs."
+    },
+    {
+      "id": "settlement_posting",
+      "label": "Settlement Posting",
+      "description": "Records the settlement leg toward the nostro or correspondent account."
+    }
+  ],
+  "statuses": [
+    {
+      "id": "active",
+      "label": "Active",
+      "description": "The account or ledger is enabled for postings."
+    },
+    {
+      "id": "suspended",
+      "label": "Suspended",
+      "description": "The account or ledger is temporarily prevented from accepting postings."
+    },
+    {
+      "id": "closed",
+      "label": "Closed",
+      "description": "The account or ledger has been permanently withdrawn from use."
+    }
+  ],
+  "settlementInstructionPurposes": [
+    {
+      "id": "trade_settlement",
+      "label": "Trade Settlement",
+      "description": "Standing settlement instruction used for trade-related cross-border payments."
+    },
+    {
+      "id": "general_settlement",
+      "label": "General Settlement",
+      "description": "Standing settlement instruction used for general cross-border payments."
+    },
+    {
+      "id": "treasury_settlement",
+      "label": "Treasury Settlement",
+      "description": "Standing settlement instruction used for treasury and FX settlement flows."
+    }
+  ],
+  "postingReferenceTemplates": [
+    {
+      "id": "customer_posting",
+      "label": "Customer posting reference",
+      "template": "demo-post-cust-{date}-{seq}-{ref}",
+      "description": "Reference applied to the customer debit posting."
+    },
+    {
+      "id": "fee_posting",
+      "label": "Fee posting reference",
+      "template": "demo-post-fee-{date}-{seq}-{ref}",
+      "description": "Reference applied to the charged fee posting."
+    },
+    {
+      "id": "fx_posting",
+      "label": "FX posting reference",
+      "template": "demo-post-fx-{date}-{seq}-{ref}",
+      "description": "Reference applied to the FX conversion posting."
+    },
+    {
+      "id": "settlement_posting",
+      "label": "Settlement posting reference",
+      "template": "demo-post-sett-{date}-{seq}-{ref}",
+      "description": "Reference applied to the settlement leg posting."
+    }
+  ],
+  "correspondents": [
+    {
+      "correspondent_id": "demo-corr-usd-01",
+      "correspondent_name": "Manhattan Clearing Bank NA",
+      "role": "correspondent",
+      "currency": "USD",
+      "country": "US",
+      "bic_masked": "MANHUS33•••",
+      "account_number_masked": "••••7801",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "correspondent_id": "demo-corr-eur-01",
+      "correspondent_name": "Frankfurt Clearing Bank AG",
+      "role": "correspondent",
+      "currency": "EUR",
+      "country": "DE",
+      "bic_masked": "FRANDEFF•••",
+      "account_number_masked": "••••3390",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:05:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "correspondent_id": "demo-corr-gbp-01",
+      "correspondent_name": "London Clearing Bank Plc",
+      "role": "correspondent",
+      "currency": "GBP",
+      "country": "GB",
+      "bic_masked": "LONDGB2L•••",
+      "account_number_masked": "••••5512",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:10:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "correspondent_id": "demo-corr-usd-02",
+      "correspondent_name": "Hudson Reserve Trust NA",
+      "role": "correspondent",
+      "currency": "USD",
+      "country": "US",
+      "bic_masked": "HUDSUS44•••",
+      "account_number_masked": "••••9024",
+      "organization_id": "demo-org-01",
+      "status": "suspended",
+      "created_at": "2026-01-12T09:15:00.000Z",
+      "updated_at": "2026-07-20T11:15:00.000Z"
+    }
+  ],
+  "intermediaries": [
+    {
+      "intermediary_id": "demo-inter-usd-01",
+      "intermediary_name": "Global Transit Bank NA",
+      "role": "intermediary",
+      "currency": "USD",
+      "country": "US",
+      "bic_masked": "GLOBUS33•••",
+      "account_number_masked": "••••1140",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:20:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "intermediary_id": "demo-inter-eur-01",
+      "intermediary_name": "Continental Transit Bank AG",
+      "role": "intermediary",
+      "currency": "EUR",
+      "country": "DE",
+      "bic_masked": "CONTDEFF•••",
+      "account_number_masked": "••••6673",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:25:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "intermediary_id": "demo-inter-gbp-01",
+      "intermediary_name": "Sterling Transit Bank Plc",
+      "role": "intermediary",
+      "currency": "GBP",
+      "country": "GB",
+      "bic_masked": "STERGB2L•••",
+      "account_number_masked": "••••2287",
+      "organization_id": "demo-org-01",
+      "status": "closed",
+      "created_at": "2026-01-12T09:30:00.000Z",
+      "updated_at": "2026-06-30T09:20:00.000Z"
+    }
+  ],
+  "nostroAccounts": [
+    {
+      "nostro_id": "demo-nostro-usd-01",
+      "nostro_name": "Demo Global Payments USD Nostro",
+      "role": "nostro",
+      "currency": "USD",
+      "country": "US",
+      "correspondent_id": "demo-corr-usd-01",
+      "bic_masked": "MANHUS33•••",
+      "iban_masked": "US••••7801",
+      "account_number_masked": "••••7801",
+      "available_balance": 5240180.55,
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:35:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "nostro_id": "demo-nostro-eur-01",
+      "nostro_name": "Demo Global Payments EUR Nostro",
+      "role": "nostro",
+      "currency": "EUR",
+      "country": "DE",
+      "correspondent_id": "demo-corr-eur-01",
+      "bic_masked": "FRANDEFF•••",
+      "iban_masked": "DE••••3390",
+      "account_number_masked": "••••3390",
+      "available_balance": 4180920.4,
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:40:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "nostro_id": "demo-nostro-gbp-01",
+      "nostro_name": "Demo Global Payments GBP Nostro",
+      "role": "nostro",
+      "currency": "GBP",
+      "country": "GB",
+      "correspondent_id": "demo-corr-gbp-01",
+      "bic_masked": "LONDGB2L•••",
+      "iban_masked": "GB••••5512",
+      "account_number_masked": "••••5512",
+      "available_balance": 2760540.1,
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:45:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "nostro_id": "demo-nostro-usd-02",
+      "nostro_name": "Demo Global Payments USD Reserve Nostro",
+      "role": "nostro",
+      "currency": "USD",
+      "country": "US",
+      "correspondent_id": "demo-corr-usd-02",
+      "bic_masked": "HUDSUS44•••",
+      "iban_masked": "US••••9024",
+      "account_number_masked": "••••9024",
+      "available_balance": 0.0,
+      "organization_id": "demo-org-01",
+      "status": "suspended",
+      "created_at": "2026-01-12T09:50:00.000Z",
+      "updated_at": "2026-07-20T11:15:00.000Z"
+    }
+  ],
+  "standingSettlementInstructions": [
+    {
+      "ssi_id": "demo-ssi-usd-01",
+      "label": "USD General Settlement",
+      "purpose": "general_settlement",
+      "currency": "USD",
+      "nostro_id": "demo-nostro-usd-01",
+      "correspondent_id": "demo-corr-usd-01",
+      "intermediary_id": "demo-inter-usd-01",
+      "bic_masked": "MANHUS33•••",
+      "account_number_masked": "••••7801",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T09:55:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ssi_id": "demo-ssi-eur-01",
+      "label": "EUR Trade Settlement",
+      "purpose": "trade_settlement",
+      "currency": "EUR",
+      "nostro_id": "demo-nostro-eur-01",
+      "correspondent_id": "demo-corr-eur-01",
+      "intermediary_id": "demo-inter-eur-01",
+      "bic_masked": "FRANDEFF•••",
+      "account_number_masked": "••••3390",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ssi_id": "demo-ssi-gbp-01",
+      "label": "GBP Treasury Settlement",
+      "purpose": "treasury_settlement",
+      "currency": "GBP",
+      "nostro_id": "demo-nostro-gbp-01",
+      "correspondent_id": "demo-corr-gbp-01",
+      "intermediary_id": null,
+      "bic_masked": "LONDGB2L•••",
+      "account_number_masked": "••••5512",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:05:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    }
+  ],
+  "ledgerAccounts": [
+    {
+      "ledger_account_id": "demo-ledger-cust-eur-01",
+      "ledger_account_name": "Customer Postings EUR",
+      "role": "customer",
+      "account_type": "customer_posting",
+      "currency": "EUR",
+      "gl_code_masked": "••••1001",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:10:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-cust-usd-01",
+      "ledger_account_name": "Customer Postings USD",
+      "role": "customer",
+      "account_type": "customer_posting",
+      "currency": "USD",
+      "gl_code_masked": "••••1002",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:15:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-cust-gbp-01",
+      "ledger_account_name": "Customer Postings GBP",
+      "role": "customer",
+      "account_type": "customer_posting",
+      "currency": "GBP",
+      "gl_code_masked": "••••1003",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:20:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fee-eur-01",
+      "ledger_account_name": "Fee Income EUR",
+      "role": "fees",
+      "account_type": "fee_posting",
+      "currency": "EUR",
+      "gl_code_masked": "••••2001",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:25:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fee-usd-01",
+      "ledger_account_name": "Fee Income USD",
+      "role": "fees",
+      "account_type": "fee_posting",
+      "currency": "USD",
+      "gl_code_masked": "••••2002",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:30:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fee-gbp-01",
+      "ledger_account_name": "Fee Income GBP",
+      "role": "fees",
+      "account_type": "fee_posting",
+      "currency": "GBP",
+      "gl_code_masked": "••••2003",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:35:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fx-eur-01",
+      "ledger_account_name": "FX Conversion EUR",
+      "role": "fx",
+      "account_type": "fx_posting",
+      "currency": "EUR",
+      "gl_code_masked": "••••3001",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:40:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fx-usd-01",
+      "ledger_account_name": "FX Conversion USD",
+      "role": "fx",
+      "account_type": "fx_posting",
+      "currency": "USD",
+      "gl_code_masked": "••••3002",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:45:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-fx-gbp-01",
+      "ledger_account_name": "FX Conversion GBP",
+      "role": "fx",
+      "account_type": "fx_posting",
+      "currency": "GBP",
+      "gl_code_masked": "••••3003",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:50:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-sett-eur-01",
+      "ledger_account_name": "Settlement Suspense EUR",
+      "role": "settlement",
+      "account_type": "settlement_posting",
+      "currency": "EUR",
+      "gl_code_masked": "••••4001",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T10:55:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-sett-usd-01",
+      "ledger_account_name": "Settlement Suspense USD",
+      "role": "settlement",
+      "account_type": "settlement_posting",
+      "currency": "USD",
+      "gl_code_masked": "••••4002",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-sett-gbp-01",
+      "ledger_account_name": "Settlement Suspense GBP",
+      "role": "settlement",
+      "account_type": "settlement_posting",
+      "currency": "GBP",
+      "gl_code_masked": "••••4003",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:05:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "ledger_account_id": "demo-ledger-sett-usd-legacy",
+      "ledger_account_name": "Settlement Suspense USD Legacy",
+      "role": "settlement",
+      "account_type": "settlement_posting",
+      "currency": "USD",
+      "gl_code_masked": "••••4099",
+      "organization_id": "demo-org-01",
+      "status": "closed",
+      "created_at": "2026-01-12T11:10:00.000Z",
+      "updated_at": "2026-06-05T09:00:00.000Z"
+    }
+  ],
+  "accountingDeterminations": [
+    {
+      "determination_id": "demo-acctg-eur-usd-01",
+      "label": "EUR-USD Corporate Online Determination",
+      "pair_id": "EUR-USD",
+      "source_currency": "EUR",
+      "beneficiary_currency": "USD",
+      "customer_segment": "corporate",
+      "product": "current_account",
+      "channel": "online_banking",
+      "ssi_id": "demo-ssi-usd-01",
+      "nostro_id": "demo-nostro-usd-01",
+      "correspondent_id": "demo-corr-usd-01",
+      "intermediary_id": "demo-inter-usd-01",
+      "customer_ledger_account_id": "demo-ledger-cust-eur-01",
+      "fee_ledger_account_id": "demo-ledger-fee-eur-01",
+      "fx_ledger_account_id": "demo-ledger-fx-eur-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-usd-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:15:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-acctg-eur-gbp-01",
+      "label": "EUR-GBP Commercial Online Determination",
+      "pair_id": "EUR-GBP",
+      "source_currency": "EUR",
+      "beneficiary_currency": "GBP",
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "online_banking",
+      "ssi_id": "demo-ssi-gbp-01",
+      "nostro_id": "demo-nostro-gbp-01",
+      "correspondent_id": "demo-corr-gbp-01",
+      "intermediary_id": null,
+      "customer_ledger_account_id": "demo-ledger-cust-eur-01",
+      "fee_ledger_account_id": "demo-ledger-fee-eur-01",
+      "fx_ledger_account_id": "demo-ledger-fx-eur-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-gbp-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:20:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-acctg-usd-eur-01",
+      "label": "USD-EUR Corporate Online Determination",
+      "pair_id": "USD-EUR",
+      "source_currency": "USD",
+      "beneficiary_currency": "EUR",
+      "customer_segment": "corporate",
+      "product": "current_account",
+      "channel": "online_banking",
+      "ssi_id": "demo-ssi-eur-01",
+      "nostro_id": "demo-nostro-eur-01",
+      "correspondent_id": "demo-corr-eur-01",
+      "intermediary_id": "demo-inter-eur-01",
+      "customer_ledger_account_id": "demo-ledger-cust-usd-01",
+      "fee_ledger_account_id": "demo-ledger-fee-usd-01",
+      "fx_ledger_account_id": "demo-ledger-fx-usd-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-eur-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:25:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-acctg-usd-gbp-01",
+      "label": "USD-GBP Commercial Relationship Desk Determination",
+      "pair_id": "USD-GBP",
+      "source_currency": "USD",
+      "beneficiary_currency": "GBP",
+      "customer_segment": "commercial",
+      "product": "current_account",
+      "channel": "relationship_desk",
+      "ssi_id": "demo-ssi-gbp-01",
+      "nostro_id": "demo-nostro-gbp-01",
+      "correspondent_id": "demo-corr-gbp-01",
+      "intermediary_id": "demo-inter-gbp-01",
+      "customer_ledger_account_id": "demo-ledger-cust-usd-01",
+      "fee_ledger_account_id": "demo-ledger-fee-usd-01",
+      "fx_ledger_account_id": "demo-ledger-fx-usd-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-gbp-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:30:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-acctg-gbp-eur-01",
+      "label": "GBP-EUR Small Business Online Determination",
+      "pair_id": "GBP-EUR",
+      "source_currency": "GBP",
+      "beneficiary_currency": "EUR",
+      "customer_segment": "small_business",
+      "product": "current_account",
+      "channel": "online_banking",
+      "ssi_id": "demo-ssi-eur-01",
+      "nostro_id": "demo-nostro-eur-01",
+      "correspondent_id": "demo-corr-eur-01",
+      "intermediary_id": "demo-inter-eur-01",
+      "customer_ledger_account_id": "demo-ledger-cust-gbp-01",
+      "fee_ledger_account_id": "demo-ledger-fee-gbp-01",
+      "fx_ledger_account_id": "demo-ledger-fx-gbp-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-eur-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:35:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "determination_id": "demo-acctg-gbp-usd-01",
+      "label": "GBP-USD Corporate Host-to-Host Determination",
+      "pair_id": "GBP-USD",
+      "source_currency": "GBP",
+      "beneficiary_currency": "USD",
+      "customer_segment": "corporate",
+      "product": "fx_settlement",
+      "channel": "host_to_host",
+      "ssi_id": "demo-ssi-usd-01",
+      "nostro_id": "demo-nostro-usd-01",
+      "correspondent_id": "demo-corr-usd-01",
+      "intermediary_id": "demo-inter-usd-01",
+      "customer_ledger_account_id": "demo-ledger-cust-gbp-01",
+      "fee_ledger_account_id": "demo-ledger-fee-gbp-01",
+      "fx_ledger_account_id": "demo-ledger-fx-gbp-01",
+      "settlement_ledger_account_id": "demo-ledger-sett-usd-01",
+      "organization_id": "demo-org-01",
+      "status": "active",
+      "created_at": "2026-01-12T11:40:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    }
+  ],
+  "defaultDetermination": {
+    "determination_id": "demo-acctg-default",
+    "label": "Standard default accounting determination",
+    "description": "Fallback determination applied when no specific dimension combination matches; keeps the demo functional for any eligible pair by routing to currency-appropriate nostro and ledger accounts.",
+    "ssi_id": "demo-ssi-usd-01",
+    "nostro_id": "demo-nostro-usd-01",
+    "correspondent_id": "demo-corr-usd-01",
+    "intermediary_id": null,
+    "customer_ledger_account_id": "demo-ledger-cust-eur-01",
+    "fee_ledger_account_id": "demo-ledger-fee-eur-01",
+    "fx_ledger_account_id": "demo-ledger-fx-eur-01",
+    "settlement_ledger_account_id": "demo-ledger-sett-usd-01",
+    "status": "active"
+  }
+}

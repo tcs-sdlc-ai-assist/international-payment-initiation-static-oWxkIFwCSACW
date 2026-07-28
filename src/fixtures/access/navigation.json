@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A navigation item is hidden and its route denied unless the session holds every capability listed in required_capabilities."
+  },
+  "navigation": [
+    {
+      "id": "nav-payments-new",
+      "label": "New Payment",
+      "description": "Create and submit a new international payment draft.",
+      "route": "/payments/new",
+      "icon": "payment-create",
+      "order": 10,
+      "group": "payments",
+      "required_capabilities": ["payment:initiate"],
+      "exact": true
+    },
+    {
+      "id": "nav-payments-approvals",
+      "label": "Approvals",
+      "description": "Review and approve submitted payments before release.",
+      "route": "/payments/approvals",
+      "icon": "payment-approve",
+      "order": 20,
+      "group": "payments",
+      "required_capabilities": ["payment:approve"],
+      "exact": true
+    },
+    {
+      "id": "nav-payments-operations",
+      "label": "Operations",
+      "description": "Progress, hold, or release approved payment operations.",
+      "route": "/payments/operations",
+      "icon": "payment-operate",
+      "order": 30,
+      "group": "payments",
+      "required_capabilities": ["payment:operate"],
+      "exact": true
+    },
+    {
+      "id": "nav-signers",
+      "label": "Signers",
+      "description": "View and manage signer entitlements and capability overrides.",
+      "route": "/signers",
+      "icon": "signer",
+      "order": 40,
+      "group": "administration",
+      "required_capabilities": ["signer.read"],
+      "exact": false
+    },
+    {
+      "id": "nav-audit",
+      "label": "Audit",
+      "description": "Read audit trails and signer entitlement history.",
+      "route": "/audit",
+      "icon": "audit",
+      "order": 50,
+      "group": "administration",
+      "required_capabilities": ["signer.read"],
+      "exact": false
+    }
+  ],
+  "groups": [
+    {
+      "id": "payments",
+      "label": "Payments",
+      "order": 10
+    },
+    {
+      "id": "administration",
+      "label": "Administration",
+      "order": 20
+    }
+  ]
+}

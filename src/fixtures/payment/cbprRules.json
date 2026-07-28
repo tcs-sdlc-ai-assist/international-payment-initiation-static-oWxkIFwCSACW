@@ -1,0 +1,709 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A CBPR+ validation rule set is only applied when its scheme is present here and eligible=true; conditional field requirements, address rules, lengths, permitted characters, and ISO code formats are enforced in the UI before submission. All values are simulated and demo-safe, and never carry real routing instructions or account holder identity."
+  },
+  "characterSetPolicy": {
+    "description": "CBPR+ permits the FIN X character set for structured fields. permitted_pattern values are anchored regular-expression strings validated per field; forbidden_pattern flags characters that must never appear. These patterns are demo hints and are not a server guarantee.",
+    "default_charset_id": "fin_x",
+    "case_sensitive": false
+  },
+  "charsets": [
+    {
+      "id": "fin_x",
+      "label": "SWIFT FIN X character set",
+      "description": "The restricted character set permitted in CBPR+ structured message fields.",
+      "permitted_pattern": "^[A-Za-z0-9/\\-?:().,'+ ]+$",
+      "forbidden_pattern": "[@#$%^*=\\[\\]{}<>~`|\\\\]"
+    },
+    {
+      "id": "numeric",
+      "label": "Numeric only",
+      "description": "Digits only, used for amount and sequence fields.",
+      "permitted_pattern": "^[0-9]+$",
+      "forbidden_pattern": "[^0-9]"
+    },
+    {
+      "id": "decimal",
+      "label": "Decimal amount",
+      "description": "A decimal amount with an optional fractional part.",
+      "permitted_pattern": "^[0-9]+(\\.[0-9]+)?$",
+      "forbidden_pattern": "[^0-9.]"
+    }
+  ],
+  "isoCodeFormats": [
+    {
+      "id": "bic",
+      "label": "BIC / SWIFT code",
+      "description": "ISO 9362 business identifier code, 8 or 11 characters.",
+      "pattern": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
+      "min_length": 8,
+      "max_length": 11
+    },
+    {
+      "id": "iban",
+      "label": "IBAN",
+      "description": "ISO 13616 international bank account number, up to 34 characters.",
+      "pattern": "^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$",
+      "min_length": 15,
+      "max_length": 34
+    },
+    {
+      "id": "country",
+      "label": "Country code",
+      "description": "ISO 3166-1 alpha-2 country code.",
+      "pattern": "^[A-Z]{2}$",
+      "min_length": 2,
+      "max_length": 2
+    },
+    {
+      "id": "currency",
+      "label": "Currency code",
+      "description": "ISO 4217 alpha-3 currency code.",
+      "pattern": "^[A-Z]{3}$",
+      "min_length": 3,
+      "max_length": 3
+    },
+    {
+      "id": "uetr",
+      "label": "UETR",
+      "description": "Unique end-to-end transaction reference; a UUID v4 in production, simulated in this demo.",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+      "min_length": 36,
+      "max_length": 36
+    },
+    {
+      "id": "lei",
+      "label": "LEI",
+      "description": "ISO 17442 legal entity identifier, 20 characters.",
+      "pattern": "^[A-Z0-9]{18}[0-9]{2}$",
+      "min_length": 20,
+      "max_length": 20
+    }
+  ],
+  "addressRuleTypes": [
+    {
+      "id": "structured",
+      "label": "Structured address",
+      "description": "Address components are supplied as discrete elements (street, town, postal code, country).",
+      "hybrid_permitted": false
+    },
+    {
+      "id": "unstructured",
+      "label": "Unstructured address",
+      "description": "Address is supplied as free-text lines; permitted only during the CBPR+ coexistence window.",
+      "hybrid_permitted": false
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybrid address",
+      "description": "A mix of structured elements and residual free-text lines is permitted during coexistence.",
+      "hybrid_permitted": true
+    }
+  ],
+  "requirementLevels": [
+    {
+      "id": "mandatory",
+      "label": "Mandatory",
+      "description": "The field must always be present and valid.",
+      "blocking": true
+    },
+    {
+      "id": "conditional",
+      "label": "Conditional",
+      "description": "The field is required only when its condition is met.",
+      "blocking": true
+    },
+    {
+      "id": "optional",
+      "label": "Optional",
+      "description": "The field may be omitted.",
+      "blocking": false
+    },
+    {
+      "id": "forbidden",
+      "label": "Forbidden",
+      "description": "The field must not be present under the active rule set.",
+      "blocking": true
+    }
+  ],
+  "conditionOperators": [
+    {
+      "id": "equals",
+      "label": "Equals",
+      "description": "The referenced field value equals the comparison value."
+    },
+    {
+      "id": "not_equals",
+      "label": "Not equals",
+      "description": "The referenced field value differs from the comparison value."
+    },
+    {
+      "id": "in",
+      "label": "In set",
+      "description": "The referenced field value is one of the comparison values."
+    },
+    {
+      "id": "is_present",
+      "label": "Is present",
+      "description": "The referenced field has a non-empty value."
+    },
+    {
+      "id": "is_absent",
+      "label": "Is absent",
+      "description": "The referenced field has no value."
+    }
+  ],
+  "validationReasonCodes": [
+    {
+      "id": "cbpr.field.required",
+      "label": "Field required",
+      "description": "A mandatory or conditionally-required field is missing.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.field.forbidden",
+      "label": "Field forbidden",
+      "description": "A field is present that is not permitted under the active rule set.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.field.too_long",
+      "label": "Field too long",
+      "description": "A field exceeds its maximum permitted length.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.field.too_short",
+      "label": "Field too short",
+      "description": "A field is shorter than its minimum permitted length.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.field.invalid_characters",
+      "label": "Invalid characters",
+      "description": "A field contains characters outside the permitted character set.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.field.invalid_format",
+      "label": "Invalid format",
+      "description": "A field does not match its required ISO code or structural format.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.address.structured_required",
+      "label": "Structured address required",
+      "description": "A structured address is required and unstructured free-text is not permitted.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbpr.address.hybrid_not_permitted",
+      "label": "Hybrid address not permitted",
+      "description": "A hybrid address is not permitted under the active rule set.",
+      "severity": "warning",
+      "blocking": true
+    }
+  ],
+  "ruleSets": [
+    {
+      "rule_set_id": "demo-cbpr-eur-de-01",
+      "label": "EUR / DE CBPR+ Rule Set",
+      "scheme": "cbpr_plus",
+      "jurisdiction": "DE",
+      "currency": "EUR",
+      "eligible": true,
+      "charset_id": "fin_x",
+      "address_rule_type": "structured",
+      "coexistence_deadline": "2026-11-22",
+      "fieldRules": [
+        {
+          "field": "debtor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "debtor_street",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 70,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_town",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_postal_code",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 16,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "creditor_iban",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 15,
+          "max_length": 34,
+          "iso_format_id": "iban",
+          "condition": null
+        },
+        {
+          "field": "creditor_agent_bic",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 8,
+          "max_length": 11,
+          "iso_format_id": "bic",
+          "condition": null
+        },
+        {
+          "field": "intermediary_agent_bic",
+          "requirement": "conditional",
+          "charset_id": "fin_x",
+          "min_length": 8,
+          "max_length": 11,
+          "iso_format_id": "bic",
+          "condition": {
+            "operator": "is_present",
+            "field": "intermediary_agent_bic",
+            "values": []
+          }
+        },
+        {
+          "field": "remittance_information",
+          "requirement": "optional",
+          "charset_id": "fin_x",
+          "min_length": 0,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "uetr",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 36,
+          "max_length": 36,
+          "iso_format_id": "uetr",
+          "condition": null
+        }
+      ],
+      "created_at": "2026-01-12T09:00:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "rule_set_id": "demo-cbpr-usd-us-01",
+      "label": "USD / US CBPR+ Rule Set",
+      "scheme": "cbpr_plus",
+      "jurisdiction": "US",
+      "currency": "USD",
+      "eligible": true,
+      "charset_id": "fin_x",
+      "address_rule_type": "hybrid",
+      "coexistence_deadline": "2026-11-22",
+      "fieldRules": [
+        {
+          "field": "debtor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "debtor_address_line",
+          "requirement": "conditional",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 70,
+          "iso_format_id": null,
+          "condition": {
+            "operator": "is_absent",
+            "field": "debtor_street",
+            "values": []
+          }
+        },
+        {
+          "field": "debtor_street",
+          "requirement": "conditional",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 70,
+          "iso_format_id": null,
+          "condition": {
+            "operator": "is_absent",
+            "field": "debtor_address_line",
+            "values": []
+          }
+        },
+        {
+          "field": "creditor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "creditor_account",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 34,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_agent_bic",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 8,
+          "max_length": 11,
+          "iso_format_id": "bic",
+          "condition": null
+        },
+        {
+          "field": "purpose_code",
+          "requirement": "conditional",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 4,
+          "iso_format_id": null,
+          "condition": {
+            "operator": "in",
+            "field": "charge_treatment",
+            "values": ["OUR", "BEN"]
+          }
+        },
+        {
+          "field": "remittance_information",
+          "requirement": "optional",
+          "charset_id": "fin_x",
+          "min_length": 0,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "uetr",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 36,
+          "max_length": 36,
+          "iso_format_id": "uetr",
+          "condition": null
+        }
+      ],
+      "created_at": "2026-01-12T09:05:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "rule_set_id": "demo-cbpr-gbp-gb-01",
+      "label": "GBP / GB CBPR+ Rule Set",
+      "scheme": "cbpr_plus",
+      "jurisdiction": "GB",
+      "currency": "GBP",
+      "eligible": true,
+      "charset_id": "fin_x",
+      "address_rule_type": "structured",
+      "coexistence_deadline": "2026-11-22",
+      "fieldRules": [
+        {
+          "field": "debtor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "debtor_town",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_country",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 2,
+          "max_length": 2,
+          "iso_format_id": "country",
+          "condition": null
+        },
+        {
+          "field": "creditor_town",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_iban",
+          "requirement": "conditional",
+          "charset_id": "fin_x",
+          "min_length": 15,
+          "max_length": 34,
+          "iso_format_id": "iban",
+          "condition": {
+            "operator": "equals",
+            "field": "creditor_country",
+            "values": ["GB"]
+          }
+        },
+        {
+          "field": "creditor_agent_bic",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 8,
+          "max_length": 11,
+          "iso_format_id": "bic",
+          "condition": null
+        },
+        {
+          "field": "remittance_information",
+          "requirement": "optional",
+          "charset_id": "fin_x",
+          "min_length": 0,
+          "max_length": 140,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "uetr",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 36,
+          "max_length": 36,
+          "iso_format_id": "uetr",
+          "condition": null
+        }
+      ],
+      "created_at": "2026-01-12T09:10:00.000Z",
+      "updated_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "rule_set_id": "demo-cbpr-legacy-mt-01",
+      "label": "Legacy MT Coexistence Rule Set",
+      "scheme": "legacy_mt",
+      "jurisdiction": "XX",
+      "currency": "USD",
+      "eligible": false,
+      "charset_id": "fin_x",
+      "address_rule_type": "unstructured",
+      "coexistence_deadline": "2025-11-22",
+      "fieldRules": [
+        {
+          "field": "debtor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "debtor_address_line",
+          "requirement": "optional",
+          "charset_id": "fin_x",
+          "min_length": 0,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_name",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 35,
+          "iso_format_id": null,
+          "condition": null
+        },
+        {
+          "field": "creditor_account",
+          "requirement": "mandatory",
+          "charset_id": "fin_x",
+          "min_length": 1,
+          "max_length": 34,
+          "iso_format_id": null,
+          "condition": null
+        }
+      ],
+      "created_at": "2026-01-12T09:15:00.000Z",
+      "updated_at": "2026-06-30T09:20:00.000Z"
+    }
+  ],
+  "defaultRuleSet": {
+    "rule_set_id": "demo-cbpr-default",
+    "label": "Standard default CBPR+ rule set",
+    "description": "Fallback rule set applied when no specific scheme, jurisdiction, or currency combination matches; keeps the demo functional by enforcing baseline CBPR+ structured requirements.",
+    "scheme": "cbpr_plus",
+    "charset_id": "fin_x",
+    "address_rule_type": "structured",
+    "coexistence_deadline": "2026-11-22",
+    "fieldRules": [
+      {
+        "field": "debtor_name",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 1,
+        "max_length": 140,
+        "iso_format_id": null,
+        "condition": null
+      },
+      {
+        "field": "debtor_country",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 2,
+        "max_length": 2,
+        "iso_format_id": "country",
+        "condition": null
+      },
+      {
+        "field": "creditor_name",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 1,
+        "max_length": 140,
+        "iso_format_id": null,
+        "condition": null
+      },
+      {
+        "field": "creditor_country",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 2,
+        "max_length": 2,
+        "iso_format_id": "country",
+        "condition": null
+      },
+      {
+        "field": "creditor_account",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 1,
+        "max_length": 34,
+        "iso_format_id": null,
+        "condition": null
+      },
+      {
+        "field": "creditor_agent_bic",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 8,
+        "max_length": 11,
+        "iso_format_id": "bic",
+        "condition": null
+      },
+      {
+        "field": "uetr",
+        "requirement": "mandatory",
+        "charset_id": "fin_x",
+        "min_length": 36,
+        "max_length": 36,
+        "iso_format_id": "uetr",
+        "condition": null
+      }
+    ],
+    "status": "active"
+  }
+}

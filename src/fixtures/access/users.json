@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "users": [
+    {
+      "user_id": "demo-user-initiator-01",
+      "user_name": "i.demo",
+      "email": "initiator.demo@example.test",
+      "phone": "+1-555-0100",
+      "organization_id": "demo-org-01",
+      "organization_name": "Demo Global Payments Ltd",
+      "role": "initiator",
+      "capabilities": ["payment:initiate"],
+      "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01"],
+      "masking_policy_id": "list",
+      "default_route": "/payments/new",
+      "credential_hint": {
+        "username": "i.demo",
+        "passcode": "demo-initiator-2026",
+        "note": "Non-production demo credential — fake data only."
+      },
+      "created_at": "2026-06-28T09:00:00.000Z",
+      "last_active_at": "2026-07-27T16:30:00.000Z"
+    },
+    {
+      "user_id": "demo-user-approver-01",
+      "user_name": "a.demo",
+      "email": "approver.demo@example.test",
+      "phone": "+1-555-0200",
+      "organization_id": "demo-org-01",
+      "organization_name": "Demo Global Payments Ltd",
+      "role": "approver",
+      "capabilities": ["payment:approve"],
+      "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
+      "masking_policy_id": "confirmation",
+      "default_route": "/payments/approvals",
+      "credential_hint": {
+        "username": "a.demo",
+        "passcode": "demo-approver-2026",
+        "note": "Non-production demo credential — fake data only."
+      },
+      "created_at": "2026-06-28T09:05:00.000Z",
+      "last_active_at": "2026-07-28T08:15:00.000Z"
+    },
+    {
+      "user_id": "demo-user-operator-01",
+      "user_name": "o.demo",
+      "email": "operations.demo@example.test",
+      "phone": "+1-555-0300",
+      "organization_id": "demo-org-01",
+      "organization_name": "Demo Global Payments Ltd",
+      "role": "operator",
+      "capabilities": ["payment:operate", "signer.read"],
+      "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
+      "masking_policy_id": "detail",
+      "default_route": "/payments/operations",
+      "credential_hint": {
+        "username": "o.demo",
+        "passcode": "demo-operator-2026",
+        "note": "Non-production demo credential — fake data only."
+      },
+      "created_at": "2026-06-28T09:10:00.000Z",
+      "last_active_at": "2026-07-27T11:45:00.000Z"
+    },
+    {
+      "user_id": "demo-user-controlling-01",
+      "user_name": "c.demo",
+      "email": "controlling.demo@example.test",
+      "phone": "+1-555-0400",
+      "organization_id": "demo-org-01",
+      "organization_name": "Demo Global Payments Ltd",
+      "role": "signer-admin",
+      "capabilities": ["signer.read", "signer.manage"],
+      "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
+      "masking_policy_id": "audit",
+      "default_route": "/signers",
+      "credential_hint": {
+        "username": "c.demo",
+        "passcode": "demo-controlling-2026",
+        "note": "Non-production demo credential — fake data only."
+      },
+      "created_at": "2026-06-28T09:15:00.000Z",
+      "last_active_at": "2026-07-26T14:20:00.000Z"
+    },
+    {
+      "user_id": "demo-user-auditor-01",
+      "user_name": "d.demo",
+      "email": "auditor.demo@example.test",
+      "phone": "+1-555-0500",
+      "organization_id": "demo-org-01",
+      "organization_name": "Demo Global Payments Ltd",
+      "role": "auditor",
+      "capabilities": ["signer.read"],
+      "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
+      "masking_policy_id": "audit",
+      "default_route": "/audit",
+      "credential_hint": {
+        "username": "d.demo",
+        "passcode": "demo-auditor-2026",
+        "note": "Non-production demo credential — fake data only."
+      },
+      "created_at": "2026-06-28T09:20:00.000Z",
+      "last_active_at": "2026-07-28T07:50:00.000Z"
+    }
+  ]
+}

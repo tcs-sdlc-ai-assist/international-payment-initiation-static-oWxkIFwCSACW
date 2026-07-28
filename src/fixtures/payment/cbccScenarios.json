@@ -1,0 +1,346 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A simulated CBCC processing scenario may only be applied while the acting session holds the payment:operate capability; scenarios never carry raw PII or restricted screening logic, only sanitized reason codes and safe copy."
+  },
+  "latencyPolicy": {
+    "description": "Simulated CBCC processing latency is bounded and clamped by the mock envelope layer; min_latency_ms and max_latency_ms are hints for deterministic demo behavior.",
+    "min_latency_ms": 200,
+    "max_latency_ms": 4000
+  },
+  "checkStages": [
+    {
+      "id": "funds",
+      "label": "Funds check",
+      "description": "Confirms sufficient available balance is reserved on the source account before the payment proceeds."
+    },
+    {
+      "id": "fraud",
+      "label": "Fraud check",
+      "description": "Simulated fraud risk evaluation using sanitized outcome codes only; no restricted screening logic is exposed."
+    },
+    {
+      "id": "aml_ftr",
+      "label": "AML / FTR check",
+      "description": "Simulated anti-money-laundering and funds-transfer-reporting evaluation using sanitized outcome codes only."
+    },
+    {
+      "id": "sanctions",
+      "label": "Sanctions check",
+      "description": "Simulated sanctions screening using sanitized outcome codes only; no restricted watchlist logic is exposed."
+    }
+  ],
+  "checkResults": [
+    {
+      "id": "passed",
+      "label": "Passed",
+      "description": "The check completed without raising any concern.",
+      "blocking": false
+    },
+    {
+      "id": "review",
+      "label": "Manual review",
+      "description": "The check raised a concern that requires manual review before the payment can proceed.",
+      "blocking": true
+    },
+    {
+      "id": "repair",
+      "label": "Repair required",
+      "description": "The check found a correctable data issue that must be repaired before the payment can proceed.",
+      "blocking": true
+    },
+    {
+      "id": "failed",
+      "label": "Failed",
+      "description": "The check failed and the payment cannot proceed in its current form.",
+      "blocking": true
+    },
+    {
+      "id": "skipped",
+      "label": "Skipped",
+      "description": "The check was not evaluated because an earlier blocking check already halted processing.",
+      "blocking": false
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "accepted",
+      "label": "Accepted",
+      "description": "All processing checks passed and the payment is accepted for settlement.",
+      "terminal": true,
+      "retryable": false
+    },
+    {
+      "id": "rejected",
+      "label": "Rejected",
+      "description": "A blocking check failed and the payment has been rejected.",
+      "terminal": true,
+      "retryable": false
+    },
+    {
+      "id": "pending_review",
+      "label": "Pending review",
+      "description": "A check requires manual review; the payment is held pending an operator decision.",
+      "terminal": false,
+      "retryable": true
+    },
+    {
+      "id": "repair_required",
+      "label": "Repair required",
+      "description": "A correctable data issue was found; the payment must be repaired and resubmitted.",
+      "terminal": false,
+      "retryable": true
+    }
+  ],
+  "reasonCodes": [
+    {
+      "id": "cbcc.accepted",
+      "label": "Accepted",
+      "description": "The payment cleared all processing checks and was accepted.",
+      "severity": "info",
+      "blocking": false
+    },
+    {
+      "id": "cbcc.funds.insufficient",
+      "label": "Insufficient funds",
+      "description": "The source account did not hold sufficient available balance to cover the instructed amount and charges.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.fraud.review",
+      "label": "Fraud review",
+      "description": "The payment was flagged for manual fraud review before it can proceed.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.aml.review",
+      "label": "AML review",
+      "description": "The payment was flagged for manual anti-money-laundering review before it can proceed.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.sanctions.review",
+      "label": "Sanctions review",
+      "description": "The payment was flagged for manual sanctions review before it can proceed.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.sanctions.rejected",
+      "label": "Sanctions rejected",
+      "description": "The payment could not be released following sanctions screening and has been rejected.",
+      "severity": "critical",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.repair.beneficiary_details",
+      "label": "Beneficiary details repair",
+      "description": "The beneficiary details require correction before the payment can be reprocessed.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.repair.remittance_info",
+      "label": "Remittance info repair",
+      "description": "The remittance information is incomplete or malformed and must be repaired before reprocessing.",
+      "severity": "warning",
+      "blocking": true
+    },
+    {
+      "id": "cbcc.unavailable",
+      "label": "Processing unavailable",
+      "description": "The processing service is temporarily unavailable and produced no result.",
+      "severity": "warning",
+      "blocking": true
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_ref": "demo-scn-cbcc-accepted",
+      "outcome": "accepted",
+      "mock_status": "success",
+      "safe_reason_code": "cbcc.accepted",
+      "min_latency_ms": 500,
+      "max_latency_ms": 2000,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "aml_ftr", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "sanctions", "result": "passed", "safe_reason_code": "cbcc.accepted" }
+      ],
+      "next_step": {
+        "title": "Payment accepted",
+        "body": "All processing checks passed and this payment has been accepted for settlement.",
+        "action_label": "Continue to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-rejected-funds",
+      "outcome": "rejected",
+      "mock_status": "error",
+      "safe_reason_code": "cbcc.funds.insufficient",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1400,
+      "checks": [
+        { "stage": "funds", "result": "failed", "safe_reason_code": "cbcc.funds.insufficient" },
+        { "stage": "fraud", "result": "skipped", "safe_reason_code": "cbcc.funds.insufficient" },
+        { "stage": "aml_ftr", "result": "skipped", "safe_reason_code": "cbcc.funds.insufficient" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.funds.insufficient" }
+      ],
+      "next_step": {
+        "title": "Insufficient funds",
+        "body": "The source account did not hold sufficient available balance for this payment. Review the account balance and resubmit if appropriate.",
+        "action_label": "Return to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-pending-fraud",
+      "outcome": "pending_review",
+      "mock_status": "success",
+      "safe_reason_code": "cbcc.fraud.review",
+      "min_latency_ms": 400,
+      "max_latency_ms": 1800,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "review", "safe_reason_code": "cbcc.fraud.review" },
+        { "stage": "aml_ftr", "result": "skipped", "safe_reason_code": "cbcc.fraud.review" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.fraud.review" }
+      ],
+      "next_step": {
+        "title": "Held for fraud review",
+        "body": "This payment has been flagged for manual fraud review. An operator must review it before it can proceed.",
+        "action_label": "Open review queue",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-pending-aml",
+      "outcome": "pending_review",
+      "mock_status": "success",
+      "safe_reason_code": "cbcc.aml.review",
+      "min_latency_ms": 400,
+      "max_latency_ms": 1800,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "aml_ftr", "result": "review", "safe_reason_code": "cbcc.aml.review" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.aml.review" }
+      ],
+      "next_step": {
+        "title": "Held for AML review",
+        "body": "This payment has been flagged for manual anti-money-laundering review. An operator must review it before it can proceed.",
+        "action_label": "Open review queue",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-pending-sanctions",
+      "outcome": "pending_review",
+      "mock_status": "success",
+      "safe_reason_code": "cbcc.sanctions.review",
+      "min_latency_ms": 500,
+      "max_latency_ms": 2200,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "aml_ftr", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "sanctions", "result": "review", "safe_reason_code": "cbcc.sanctions.review" }
+      ],
+      "next_step": {
+        "title": "Held for sanctions review",
+        "body": "This payment has been flagged for manual sanctions review. An operator must review it before it can proceed.",
+        "action_label": "Open review queue",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-rejected-sanctions",
+      "outcome": "rejected",
+      "mock_status": "error",
+      "safe_reason_code": "cbcc.sanctions.rejected",
+      "min_latency_ms": 500,
+      "max_latency_ms": 2200,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "aml_ftr", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "sanctions", "result": "failed", "safe_reason_code": "cbcc.sanctions.rejected" }
+      ],
+      "next_step": {
+        "title": "Payment rejected",
+        "body": "This payment could not be released following sanctions screening and has been rejected. No funds were moved.",
+        "action_label": "Return to operations",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-repair-beneficiary",
+      "outcome": "repair_required",
+      "mock_status": "error",
+      "safe_reason_code": "cbcc.repair.beneficiary_details",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1500,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "repair", "safe_reason_code": "cbcc.repair.beneficiary_details" },
+        { "stage": "aml_ftr", "result": "skipped", "safe_reason_code": "cbcc.repair.beneficiary_details" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.repair.beneficiary_details" }
+      ],
+      "next_step": {
+        "title": "Beneficiary details need repair",
+        "body": "The beneficiary details require correction before this payment can be reprocessed. Repair the details and resubmit.",
+        "action_label": "Repair payment",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-repair-remittance",
+      "outcome": "repair_required",
+      "mock_status": "error",
+      "safe_reason_code": "cbcc.repair.remittance_info",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1500,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "aml_ftr", "result": "repair", "safe_reason_code": "cbcc.repair.remittance_info" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.repair.remittance_info" }
+      ],
+      "next_step": {
+        "title": "Remittance info needs repair",
+        "body": "The remittance information is incomplete or malformed and must be repaired before this payment can be reprocessed.",
+        "action_label": "Repair payment",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-cbcc-unavailable",
+      "outcome": "pending_review",
+      "mock_status": "error",
+      "safe_reason_code": "cbcc.unavailable",
+      "min_latency_ms": 600,
+      "max_latency_ms": 3200,
+      "checks": [
+        { "stage": "funds", "result": "passed", "safe_reason_code": "cbcc.accepted" },
+        { "stage": "fraud", "result": "skipped", "safe_reason_code": "cbcc.unavailable" },
+        { "stage": "aml_ftr", "result": "skipped", "safe_reason_code": "cbcc.unavailable" },
+        { "stage": "sanctions", "result": "skipped", "safe_reason_code": "cbcc.unavailable" }
+      ],
+      "next_step": {
+        "title": "Processing unavailable",
+        "body": "The processing service is temporarily unavailable and produced no result. Wait a moment and try processing again.",
+        "action_label": "Try again",
+        "action_route": "/payments/operations"
+      }
+    }
+  ]
+}

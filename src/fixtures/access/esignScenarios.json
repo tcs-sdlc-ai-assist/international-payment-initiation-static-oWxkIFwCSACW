@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "authorizationPolicy": {
+    "strategy": "deny-by-default",
+    "description": "A simulated eSign scenario may only be applied while the acting session holds the payment:approve capability; scenarios never carry raw PII, only sanitized reason codes and safe copy."
+  },
+  "latencyPolicy": {
+    "description": "Simulated eSign latency is bounded and clamped by the mock envelope layer; min_latency_ms and max_latency_ms are hints for deterministic demo behavior.",
+    "min_latency_ms": 120,
+    "max_latency_ms": 4000
+  },
+  "outcomes": [
+    {
+      "id": "success",
+      "label": "Signed",
+      "description": "The signer completed the eSign ceremony and the payment is approved for release.",
+      "terminal": true,
+      "retryable": false
+    },
+    {
+      "id": "declined",
+      "label": "Declined",
+      "description": "The signer actively declined to sign the payment.",
+      "terminal": true,
+      "retryable": false
+    },
+    {
+      "id": "expired",
+      "label": "Expired",
+      "description": "The eSign request lapsed before the signer completed the ceremony.",
+      "terminal": true,
+      "retryable": true
+    },
+    {
+      "id": "unavailable",
+      "label": "Unavailable",
+      "description": "The eSign provider is temporarily unavailable and could not accept the request.",
+      "terminal": false,
+      "retryable": true
+    },
+    {
+      "id": "transient_error",
+      "label": "Transient Error",
+      "description": "A transient error interrupted the eSign ceremony; the request can be retried.",
+      "terminal": false,
+      "retryable": true
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_ref": "demo-scn-esign-success",
+      "outcome": "success",
+      "mock_status": "success",
+      "safe_reason_code": "esign.success",
+      "min_latency_ms": 400,
+      "max_latency_ms": 1600,
+      "next_step": {
+        "title": "Signature confirmed",
+        "body": "The signer completed the eSign ceremony. This payment is now approved and ready for release.",
+        "action_label": "Continue to release",
+        "action_route": "/payments/operations"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-esign-declined",
+      "outcome": "declined",
+      "mock_status": "error",
+      "safe_reason_code": "esign.declined",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1400,
+      "next_step": {
+        "title": "Signature declined",
+        "body": "The signer declined to sign this payment. Review the payment details and, if appropriate, submit a new approval request.",
+        "action_label": "Return to approvals",
+        "action_route": "/payments/approvals"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-esign-expired",
+      "outcome": "expired",
+      "mock_status": "error",
+      "safe_reason_code": "esign.expired",
+      "min_latency_ms": 300,
+      "max_latency_ms": 1200,
+      "next_step": {
+        "title": "Signature request expired",
+        "body": "The eSign request lapsed before it was completed. You can resend a fresh signature request to the signer.",
+        "action_label": "Resend request",
+        "action_route": "/payments/approvals"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-esign-unavailable",
+      "outcome": "unavailable",
+      "mock_status": "error",
+      "safe_reason_code": "esign.unavailable",
+      "min_latency_ms": 600,
+      "max_latency_ms": 2400,
+      "next_step": {
+        "title": "eSign provider unavailable",
+        "body": "The eSign provider is temporarily unavailable. Wait a moment and try requesting the signature again.",
+        "action_label": "Try again",
+        "action_route": "/payments/approvals"
+      }
+    },
+    {
+      "scenario_ref": "demo-scn-esign-transient-error",
+      "outcome": "transient_error",
+      "mock_status": "error",
+      "safe_reason_code": "esign.transient_error",
+      "min_latency_ms": 500,
+      "max_latency_ms": 3200,
+      "next_step": {
+        "title": "Something went wrong",
+        "body": "A transient error interrupted the signature ceremony. No changes were made — please retry the request.",
+        "action_label": "Retry",
+        "action_route": "/payments/approvals"
+      }
+    }
+  ]
+}

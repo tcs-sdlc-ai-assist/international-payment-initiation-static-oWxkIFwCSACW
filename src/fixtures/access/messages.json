@@ -1,0 +1,210 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "disclaimers": {
+    "demoData": {
+      "id": "disclaimer.demo_data",
+      "title": "Demonstration data only",
+      "body": "This environment uses fabricated, non-production data. All signers, payments, and credentials are fictional and safe to share. Do not enter real personal or banking information.",
+      "severity": "info"
+    },
+    "nonBinding": {
+      "id": "disclaimer.non_binding",
+      "title": "No real payments are initiated",
+      "body": "Actions taken here are simulated. No funds move, no messages are sent to any provider, and no real signatures are collected.",
+      "severity": "info"
+    },
+    "credentialHint": {
+      "id": "disclaimer.credential_hint",
+      "title": "Demo credentials are not secrets",
+      "body": "The credential hints shown below are shared demo logins for exploring each role. They carry no real access and must never be reused for production systems.",
+      "severity": "warning"
+    }
+  },
+  "credentialHintLabels": {
+    "sectionTitle": "Demo sign-in credentials",
+    "sectionDescription": "Choose a role to explore its capabilities. Every credential below is a shared, non-production demo login.",
+    "usernameLabel": "Username",
+    "passcodeLabel": "Passcode",
+    "roleLabel": "Role",
+    "noteLabel": "Note",
+    "copyUsername": "Copy username",
+    "copyPasscode": "Copy passcode",
+    "copiedAnnouncement": "Copied to clipboard",
+    "revealPasscode": "Show passcode",
+    "hidePasscode": "Hide passcode"
+  },
+  "auth": {
+    "success": {
+      "signIn": {
+        "id": "auth.success.sign_in",
+        "title": "Signed in",
+        "body": "You are signed in with the selected demo role. Your session will time out automatically after a period of inactivity.",
+        "severity": "success"
+      },
+      "signOut": {
+        "id": "auth.success.sign_out",
+        "title": "Signed out",
+        "body": "Your demo session has ended and any in-memory state has been cleared.",
+        "severity": "success"
+      }
+    },
+    "error": {
+      "invalidCredentials": {
+        "id": "auth.error.invalid_credentials",
+        "title": "Sign-in failed",
+        "body": "The username or passcode did not match a known demo account. Pick a role from the credential hints and try again.",
+        "severity": "critical"
+      },
+      "sessionExpired": {
+        "id": "auth.error.session_expired",
+        "title": "Session expired",
+        "body": "Your demo session timed out due to inactivity. Sign in again to continue.",
+        "severity": "warning"
+      },
+      "unauthorized": {
+        "id": "auth.error.unauthorized",
+        "title": "Access denied",
+        "body": "Your current role does not hold the capability required for this action. Switch to a role that grants it and try again.",
+        "severity": "critical"
+      }
+    },
+    "info": {
+      "sessionWarning": {
+        "id": "auth.info.session_warning",
+        "title": "Session about to expire",
+        "body": "You will be signed out soon because of inactivity. Interact with the page to stay signed in.",
+        "severity": "warning"
+      }
+    }
+  },
+  "eligibility": {
+    "resendLimit": {
+      "id": "eligibility.resend_limit",
+      "title": "Resend limit reached",
+      "body": "You have used all available resend attempts within the last 24 hours. This limit is enforced client-side for the demo only and is not a server guarantee.",
+      "severity": "warning",
+      "nonServerEnforced": true
+    },
+    "resendAvailable": {
+      "id": "eligibility.resend_available",
+      "title": "Resend available",
+      "body": "You can resend this invitation. A limited number of resends are allowed within a rolling 24-hour window in this demo.",
+      "severity": "info",
+      "nonServerEnforced": true
+    },
+    "signerLocked": {
+      "id": "eligibility.signer_locked",
+      "title": "Signer is locked",
+      "body": "This signer record is locked due to a concurrent edit and cannot be modified right now. Locking is simulated for the demo and is not a server-enforced constraint.",
+      "severity": "warning",
+      "nonServerEnforced": true
+    },
+    "signerInactive": {
+      "id": "eligibility.signer_inactive",
+      "title": "Signer is not active",
+      "body": "Only active signers may be actioned. Suspended, revoked, or pending signers must first be returned to an active status.",
+      "severity": "warning",
+      "nonServerEnforced": true
+    },
+    "invitationExpired": {
+      "id": "eligibility.invitation_expired",
+      "title": "Invitation expired",
+      "body": "This invitation lapsed before it was accepted. Resend a fresh invitation to re-enroll the signer.",
+      "severity": "warning",
+      "nonServerEnforced": true
+    }
+  },
+  "signers": {
+    "success": {
+      "invitationSent": {
+        "id": "signers.success.invitation_sent",
+        "title": "Invitation sent",
+        "body": "A simulated invitation has been issued to the signer. In this demo, no message actually leaves the app.",
+        "severity": "success"
+      },
+      "invitationResent": {
+        "id": "signers.success.invitation_resent",
+        "title": "Invitation resent",
+        "body": "A fresh simulated invitation has been issued. Your remaining resend attempts for this rolling 24-hour window have been reduced.",
+        "severity": "success"
+      },
+      "entitlementUpdated": {
+        "id": "signers.success.entitlement_updated",
+        "title": "Signer updated",
+        "body": "The signer entitlement changes have been recorded in this demo session.",
+        "severity": "success"
+      }
+    },
+    "error": {
+      "concurrentEdit": {
+        "id": "signers.error.concurrent_edit",
+        "title": "Changes could not be saved",
+        "body": "This signer was updated elsewhere while you were editing. Reload the latest details and reapply your changes.",
+        "severity": "critical"
+      },
+      "readOnlyField": {
+        "id": "signers.error.read_only_field",
+        "title": "Field is read-only",
+        "body": "One or more fields you attempted to change are locked for this signer and cannot be edited in its current state.",
+        "severity": "warning"
+      },
+      "notFound": {
+        "id": "signers.error.not_found",
+        "title": "Signer not found",
+        "body": "The requested signer record could not be located. It may have been removed from this demo session.",
+        "severity": "critical"
+      }
+    },
+    "info": {
+      "maskedForPrivacy": {
+        "id": "signers.info.masked_for_privacy",
+        "title": "Some details are masked",
+        "body": "Contact and identifier fields are masked according to the active display policy to protect personal information.",
+        "severity": "info"
+      }
+    }
+  },
+  "audit": {
+    "info": {
+      "readOnly": {
+        "id": "audit.info.read_only",
+        "title": "Audit trail is read-only",
+        "body": "Audit events are append-only and cannot be edited or deleted. Entries reflect simulated activity in this demo session.",
+        "severity": "info"
+      },
+      "empty": {
+        "id": "audit.info.empty",
+        "title": "No audit events yet",
+        "body": "There is no recorded activity to display. Actions taken in this demo will appear here as sanitized audit entries.",
+        "severity": "info"
+      }
+    }
+  },
+  "generic": {
+    "error": {
+      "unexpected": {
+        "id": "generic.error.unexpected",
+        "title": "Something went wrong",
+        "body": "An unexpected error interrupted this action. No changes were saved — please try again.",
+        "severity": "critical"
+      },
+      "storageUnavailable": {
+        "id": "generic.error.storage_unavailable",
+        "title": "Storage unavailable",
+        "body": "Browser storage is disabled or full, so this demo is running from temporary in-memory data. Your changes will not persist across reloads.",
+        "severity": "warning"
+      }
+    },
+    "info": {
+      "loading": {
+        "id": "generic.info.loading",
+        "title": "Loading",
+        "body": "Please wait while the requested information is prepared.",
+        "severity": "info"
+      }
+    }
+  }
+}

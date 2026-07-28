@@ -1,0 +1,570 @@
+{
+  "schemaVersion": "v1",
+  "fixturePack": "default",
+  "referenceDate": "2026-07-28",
+  "generatedAt": "2026-07-28T09:00:00.000Z",
+  "disclaimers": {
+    "simulationOnly": {
+      "id": "payment.disclaimer.simulation_only",
+      "title": "Simulated payments only",
+      "body": "Every payment in this environment is fabricated and demo-safe. No funds move, no messages reach any provider, and no real settlement occurs. Do not enter real account, beneficiary, or banking information.",
+      "severity": "info"
+    },
+    "nonBindingQuotes": {
+      "id": "payment.disclaimer.non_binding_quotes",
+      "title": "Indicative pricing is non-binding",
+      "body": "FX rates and fees shown here are simulated and for demonstration only. Indicative quotes must be refreshed into an executable quote before submission, and no rate shown constitutes a real dealing commitment.",
+      "severity": "info"
+    },
+    "maskedData": {
+      "id": "payment.disclaimer.masked_data",
+      "title": "Some details are masked",
+      "body": "Account numbers, IBANs, BICs, beneficiary names, and remittance text are masked according to the active display policy to protect information. Masked values are demo-safe placeholders and never carry real banking details.",
+      "severity": "info"
+    },
+    "clientSideChecks": {
+      "id": "payment.disclaimer.client_side_checks",
+      "title": "Checks are simulated client-side",
+      "body": "Validation, compliance, and settlement checks in this demo are simulated deterministically in the browser. They are not server-enforced guarantees and never reflect real screening or routing logic.",
+      "severity": "warning"
+    }
+  },
+  "chargeTreatments": {
+    "OUR": {
+      "id": "payment.charge.our",
+      "title": "OUR — Sender pays all charges",
+      "body": "You bear all transaction charges. The beneficiary receives the full instructed amount and no fees are deducted along the correspondent chain.",
+      "severity": "info"
+    },
+    "SHA": {
+      "id": "payment.charge.sha",
+      "title": "SHA — Shared charges",
+      "body": "You pay your own bank's charges. Any charges levied by the receiving and intermediary banks are borne by the beneficiary and may reduce the amount they receive.",
+      "severity": "info"
+    },
+    "BEN": {
+      "id": "payment.charge.ben",
+      "title": "BEN — Beneficiary pays all charges",
+      "body": "All transaction charges are deducted from the transfer amount and borne by the beneficiary. The amount received will be lower than the instructed amount.",
+      "severity": "info"
+    }
+  },
+  "beneficiaryValidation": {
+    "success": {
+      "matched": {
+        "id": "payment.beneficiary.matched",
+        "title": "Beneficiary verified",
+        "body": "The beneficiary account and name-on-account were fully validated and may be used for this payment.",
+        "severity": "success",
+        "reason_code": "beneficiary.validation.matched"
+      }
+    },
+    "warning": {
+      "namePartialMatch": {
+        "id": "payment.beneficiary.name_partial_match",
+        "title": "Confirm beneficiary name",
+        "body": "The account identifiers matched, but the name-on-account is only a close match. Review the beneficiary details and confirm before continuing.",
+        "severity": "warning",
+        "reason_code": "beneficiary.validation.name_partial_match"
+      }
+    },
+    "error": {
+      "nameMismatch": {
+        "id": "payment.beneficiary.name_mismatch",
+        "title": "Beneficiary name mismatch",
+        "body": "The name-on-account did not match the registered account holder. Correct the beneficiary details and validate again.",
+        "severity": "critical",
+        "reason_code": "beneficiary.validation.name_mismatch"
+      },
+      "ibanInvalid": {
+        "id": "payment.beneficiary.iban_invalid",
+        "title": "IBAN could not be validated",
+        "body": "The IBAN failed structural or checksum validation. Check the account details and try again.",
+        "severity": "critical",
+        "reason_code": "beneficiary.validation.iban_invalid"
+      },
+      "bicUnknown": {
+        "id": "payment.beneficiary.bic_unknown",
+        "title": "BIC could not be resolved",
+        "body": "The BIC/SWIFT code could not be matched to a known institution. Verify the routing details and try again.",
+        "severity": "critical",
+        "reason_code": "beneficiary.validation.bic_unknown"
+      },
+      "accountNotFound": {
+        "id": "payment.beneficiary.account_not_found",
+        "title": "Account not found",
+        "body": "No account could be located for the supplied identifiers. Confirm the beneficiary details with the payee.",
+        "severity": "critical",
+        "reason_code": "beneficiary.validation.account_not_found"
+      },
+      "serviceUnavailable": {
+        "id": "payment.beneficiary.service_unavailable",
+        "title": "Validation unavailable",
+        "body": "The beneficiary validation service is temporarily unavailable. Wait a moment and try validating again.",
+        "severity": "warning",
+        "reason_code": "beneficiary.validation.service_unavailable"
+      }
+    }
+  },
+  "currencyPair": {
+    "eligible": {
+      "id": "payment.pair.eligible",
+      "title": "Currency pair supported",
+      "body": "This currency pair is fully supported and may be selected for international payment initiation.",
+      "severity": "info",
+      "reason_code": "pair.eligible"
+    },
+    "sameCurrency": {
+      "id": "payment.pair.same_currency",
+      "title": "Same currency selected",
+      "body": "The source and beneficiary currencies are identical, so no cross-currency conversion applies. Choose two different currencies to initiate an international payment.",
+      "severity": "warning",
+      "reason_code": "pair.same_currency"
+    },
+    "unsupported": {
+      "id": "payment.pair.unsupported",
+      "title": "Currency pair not supported",
+      "body": "This currency pair is not supported for international payment initiation in this demo. Choose a supported combination to continue.",
+      "severity": "warning",
+      "reason_code": "pair.unsupported"
+    },
+    "restrictedCorridor": {
+      "id": "payment.pair.restricted_corridor",
+      "title": "Restricted corridor",
+      "body": "This corridor is restricted for compliance reasons and cannot be used in this demo. Select a different beneficiary currency.",
+      "severity": "critical",
+      "reason_code": "pair.restricted_corridor"
+    },
+    "temporarilyUnavailable": {
+      "id": "payment.pair.temporarily_unavailable",
+      "title": "Pricing temporarily unavailable",
+      "body": "Pricing for this pair is temporarily unavailable, so selection is blocked until it is restored. Wait a moment and try again.",
+      "severity": "warning",
+      "reason_code": "pair.temporarily_unavailable"
+    }
+  },
+  "fxQuote": {
+    "active": {
+      "id": "payment.quote.active",
+      "title": "Quote active",
+      "body": "This quote is valid and may be used according to its classification until it expires.",
+      "severity": "info",
+      "reason_code": "quote.active"
+    },
+    "expiringSoon": {
+      "id": "payment.quote.expiring_soon",
+      "title": "Quote expiring soon",
+      "body": "This quote is about to expire. Refresh it before submission to secure a current rate.",
+      "severity": "warning",
+      "reason_code": "quote.expiring_soon"
+    },
+    "expired": {
+      "id": "payment.quote.expired",
+      "title": "Quote expired",
+      "body": "This quote has expired and can no longer be used. Request a fresh quote to continue.",
+      "severity": "warning",
+      "reason_code": "quote.expired"
+    },
+    "requoteRequired": {
+      "id": "payment.quote.requote_required",
+      "title": "Re-quote required",
+      "body": "This is an indicative, display-only rate. Convert it to an executable quote before submitting the payment.",
+      "severity": "warning",
+      "reason_code": "quote.requote_required"
+    },
+    "unavailable": {
+      "id": "payment.quote.unavailable",
+      "title": "Pricing unavailable",
+      "body": "Pricing for this pair is temporarily unavailable and no quote could be produced. Wait a moment and try again.",
+      "severity": "warning",
+      "reason_code": "quote.unavailable"
+    }
+  },
+  "cbprValidation": {
+    "fieldRequired": {
+      "id": "payment.cbpr.field_required",
+      "title": "Required field missing",
+      "body": "A mandatory or conditionally-required field is missing. Complete the highlighted field before continuing.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.required"
+    },
+    "fieldForbidden": {
+      "id": "payment.cbpr.field_forbidden",
+      "title": "Field not permitted",
+      "body": "A field is present that is not permitted under the active rule set. Remove it to continue.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.forbidden"
+    },
+    "fieldTooLong": {
+      "id": "payment.cbpr.field_too_long",
+      "title": "Field too long",
+      "body": "A field exceeds its maximum permitted length. Shorten the highlighted field to continue.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.too_long"
+    },
+    "fieldTooShort": {
+      "id": "payment.cbpr.field_too_short",
+      "title": "Field too short",
+      "body": "A field is shorter than its minimum permitted length. Provide a longer value to continue.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.too_short"
+    },
+    "invalidCharacters": {
+      "id": "payment.cbpr.invalid_characters",
+      "title": "Invalid characters",
+      "body": "A field contains characters outside the permitted character set. Remove the unsupported characters and try again.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.invalid_characters"
+    },
+    "invalidFormat": {
+      "id": "payment.cbpr.invalid_format",
+      "title": "Invalid format",
+      "body": "A field does not match its required ISO code or structural format. Correct the value and try again.",
+      "severity": "critical",
+      "reason_code": "cbpr.field.invalid_format"
+    },
+    "structuredAddressRequired": {
+      "id": "payment.cbpr.structured_address_required",
+      "title": "Structured address required",
+      "body": "A structured address is required and unstructured free-text is not permitted under the active rule set. Supply the discrete address elements.",
+      "severity": "warning",
+      "reason_code": "cbpr.address.structured_required"
+    },
+    "hybridAddressNotPermitted": {
+      "id": "payment.cbpr.hybrid_address_not_permitted",
+      "title": "Hybrid address not permitted",
+      "body": "A hybrid address is not permitted under the active rule set. Provide either a fully structured or an unstructured address as required.",
+      "severity": "warning",
+      "reason_code": "cbpr.address.hybrid_not_permitted"
+    }
+  },
+  "cbcc": {
+    "success": {
+      "accepted": {
+        "id": "payment.cbcc.accepted",
+        "title": "Payment accepted",
+        "body": "All processing checks passed and this payment has been accepted for settlement.",
+        "severity": "success",
+        "reason_code": "cbcc.accepted"
+      }
+    },
+    "warning": {
+      "fraudReview": {
+        "id": "payment.cbcc.fraud_review",
+        "title": "Held for fraud review",
+        "body": "This payment has been flagged for manual fraud review. An operator must review it before it can proceed.",
+        "severity": "warning",
+        "reason_code": "cbcc.fraud.review"
+      },
+      "amlReview": {
+        "id": "payment.cbcc.aml_review",
+        "title": "Held for AML review",
+        "body": "This payment has been flagged for manual anti-money-laundering review. An operator must review it before it can proceed.",
+        "severity": "warning",
+        "reason_code": "cbcc.aml.review"
+      },
+      "sanctionsReview": {
+        "id": "payment.cbcc.sanctions_review",
+        "title": "Held for sanctions review",
+        "body": "This payment has been flagged for manual sanctions review. An operator must review it before it can proceed.",
+        "severity": "warning",
+        "reason_code": "cbcc.sanctions.review"
+      },
+      "repairBeneficiary": {
+        "id": "payment.cbcc.repair_beneficiary",
+        "title": "Beneficiary details need repair",
+        "body": "The beneficiary details require correction before this payment can be reprocessed. Repair the details and resubmit.",
+        "severity": "warning",
+        "reason_code": "cbcc.repair.beneficiary_details"
+      },
+      "repairRemittance": {
+        "id": "payment.cbcc.repair_remittance",
+        "title": "Remittance info needs repair",
+        "body": "The remittance information is incomplete or malformed and must be repaired before this payment can be reprocessed.",
+        "severity": "warning",
+        "reason_code": "cbcc.repair.remittance_info"
+      },
+      "unavailable": {
+        "id": "payment.cbcc.unavailable",
+        "title": "Processing unavailable",
+        "body": "The processing service is temporarily unavailable and produced no result. Wait a moment and try processing again.",
+        "severity": "warning",
+        "reason_code": "cbcc.unavailable"
+      }
+    },
+    "error": {
+      "fundsInsufficient": {
+        "id": "payment.cbcc.funds_insufficient",
+        "title": "Insufficient funds",
+        "body": "The source account did not hold sufficient available balance for this payment. Review the account balance and resubmit if appropriate.",
+        "severity": "critical",
+        "reason_code": "cbcc.funds.insufficient"
+      },
+      "sanctionsRejected": {
+        "id": "payment.cbcc.sanctions_rejected",
+        "title": "Payment rejected",
+        "body": "This payment could not be released following sanctions screening and has been rejected. No funds were moved.",
+        "severity": "critical",
+        "reason_code": "cbcc.sanctions.rejected"
+      }
+    }
+  },
+  "swift": {
+    "info": {
+      "transmitted": {
+        "id": "payment.swift.transmitted",
+        "title": "Message transmitted",
+        "body": "The message was transmitted to the simulated SWIFT network and is awaiting acknowledgement.",
+        "severity": "info",
+        "reason_code": "swift.transmitted"
+      }
+    },
+    "success": {
+      "acknowledged": {
+        "id": "payment.swift.acknowledged",
+        "title": "Message acknowledged",
+        "body": "The simulated SWIFT network acknowledged this message and accepted it for onward delivery.",
+        "severity": "success",
+        "reason_code": "swift.ack"
+      }
+    },
+    "warning": {
+      "repairBeneficiary": {
+        "id": "payment.swift.repair_beneficiary",
+        "title": "Beneficiary details need repair",
+        "body": "The message was returned for repair because the beneficiary details require correction. Repair the details and retransmit.",
+        "severity": "warning",
+        "reason_code": "swift.repair.beneficiary"
+      },
+      "repairCorrespondent": {
+        "id": "payment.swift.repair_correspondent",
+        "title": "Correspondent details need repair",
+        "body": "The message was returned for repair because the correspondent or routing details require correction. Repair the routing and retransmit.",
+        "severity": "warning",
+        "reason_code": "swift.repair.correspondent"
+      },
+      "unavailable": {
+        "id": "payment.swift.unavailable",
+        "title": "Network unavailable",
+        "body": "The simulated SWIFT network is temporarily unavailable and produced no result. Wait a moment and try transmitting again.",
+        "severity": "warning",
+        "reason_code": "swift.unavailable"
+      }
+    },
+    "error": {
+      "nakFormat": {
+        "id": "payment.swift.nak_format",
+        "title": "Message rejected",
+        "body": "The simulated network rejected this message because it failed format validation. No funds were moved — correct the message and retransmit.",
+        "severity": "critical",
+        "reason_code": "swift.nak.format"
+      },
+      "nakField": {
+        "id": "payment.swift.nak_field",
+        "title": "Message rejected",
+        "body": "The simulated network rejected this message because a mandatory field was missing or malformed. No funds were moved — correct the field and retransmit.",
+        "severity": "critical",
+        "reason_code": "swift.nak.field"
+      }
+    }
+  },
+  "esign": {
+    "success": {
+      "signed": {
+        "id": "payment.esign.signed",
+        "title": "Signature confirmed",
+        "body": "The signer completed the eSign ceremony. This payment is now approved and ready for release.",
+        "severity": "success",
+        "reason_code": "esign.success"
+      }
+    },
+    "warning": {
+      "expired": {
+        "id": "payment.esign.expired",
+        "title": "Signature request expired",
+        "body": "The eSign request lapsed before it was completed. You can resend a fresh signature request to the signer.",
+        "severity": "warning",
+        "reason_code": "esign.expired"
+      },
+      "unavailable": {
+        "id": "payment.esign.unavailable",
+        "title": "eSign provider unavailable",
+        "body": "The eSign provider is temporarily unavailable. Wait a moment and try requesting the signature again.",
+        "severity": "warning",
+        "reason_code": "esign.unavailable"
+      },
+      "transientError": {
+        "id": "payment.esign.transient_error",
+        "title": "Something went wrong",
+        "body": "A transient error interrupted the signature ceremony. No changes were made — please retry the request.",
+        "severity": "warning",
+        "reason_code": "esign.transient_error"
+      }
+    },
+    "error": {
+      "declined": {
+        "id": "payment.esign.declined",
+        "title": "Signature declined",
+        "body": "The signer declined to sign this payment. Review the payment details and, if appropriate, submit a new approval request.",
+        "severity": "critical",
+        "reason_code": "esign.declined"
+      }
+    }
+  },
+  "status": {
+    "pendingApproval": {
+      "id": "payment.status.pending_approval",
+      "title": "Pending approval",
+      "body": "This payment has been submitted and is awaiting approval before release.",
+      "severity": "info"
+    },
+    "accepted": {
+      "id": "payment.status.accepted",
+      "title": "Accepted",
+      "body": "This payment was approved and accepted for processing.",
+      "severity": "info"
+    },
+    "processing": {
+      "id": "payment.status.processing",
+      "title": "Processing",
+      "body": "This payment is progressing through simulated compliance and settlement checks.",
+      "severity": "info"
+    },
+    "pendingReview": {
+      "id": "payment.status.pending_review",
+      "title": "Pending review",
+      "body": "A check raised a concern; this payment is held pending an operator decision.",
+      "severity": "warning"
+    },
+    "repairRequired": {
+      "id": "payment.status.repair_required",
+      "title": "Repair required",
+      "body": "A correctable data issue was found; this payment must be repaired and resubmitted.",
+      "severity": "warning"
+    },
+    "sentToSwift": {
+      "id": "payment.status.sent_to_swift",
+      "title": "Sent to SWIFT",
+      "body": "The payment message has been transmitted to the simulated SWIFT network and awaits acknowledgement.",
+      "severity": "info"
+    },
+    "acknowledged": {
+      "id": "payment.status.acknowledged",
+      "title": "Acknowledged",
+      "body": "The simulated SWIFT network acknowledged the message and accepted it for onward delivery.",
+      "severity": "success"
+    },
+    "rejected": {
+      "id": "payment.status.rejected",
+      "title": "Rejected",
+      "body": "A blocking check or acknowledgement failure rejected this payment. No funds were moved.",
+      "severity": "critical"
+    }
+  },
+  "nextSteps": {
+    "continueToApproval": {
+      "id": "payment.next.continue_to_approval",
+      "label": "Continue to approvals",
+      "route": "/payments/approvals"
+    },
+    "continueToOperations": {
+      "id": "payment.next.continue_to_operations",
+      "label": "Continue to operations",
+      "route": "/payments/operations"
+    },
+    "returnToOperations": {
+      "id": "payment.next.return_to_operations",
+      "label": "Return to operations",
+      "route": "/payments/operations"
+    },
+    "editBeneficiary": {
+      "id": "payment.next.edit_beneficiary",
+      "label": "Edit beneficiary",
+      "route": "/payments/new"
+    },
+    "reviewAndConfirm": {
+      "id": "payment.next.review_and_confirm",
+      "label": "Review and confirm",
+      "route": "/payments/new"
+    },
+    "repairPayment": {
+      "id": "payment.next.repair_payment",
+      "label": "Repair payment",
+      "route": "/payments/operations"
+    },
+    "openReviewQueue": {
+      "id": "payment.next.open_review_queue",
+      "label": "Open review queue",
+      "route": "/payments/operations"
+    },
+    "resendSignature": {
+      "id": "payment.next.resend_signature",
+      "label": "Resend request",
+      "route": "/payments/approvals"
+    },
+    "tryAgain": {
+      "id": "payment.next.try_again",
+      "label": "Try again",
+      "route": "/payments/new"
+    }
+  },
+  "generic": {
+    "error": {
+      "unexpected": {
+        "id": "payment.generic.unexpected",
+        "title": "Something went wrong",
+        "body": "An unexpected error interrupted this action. No changes were saved — please try again.",
+        "severity": "critical"
+      },
+      "aborted": {
+        "id": "payment.generic.aborted",
+        "title": "Action cancelled",
+        "body": "The request was cancelled before it completed. No changes were made — you can start again when ready.",
+        "severity": "warning"
+      },
+      "storageUnavailable": {
+        "id": "payment.generic.storage_unavailable",
+        "title": "Storage unavailable",
+        "body": "Browser storage is disabled or full, so this demo is running from temporary in-memory data. Your changes will not persist across reloads.",
+        "severity": "warning"
+      }
+    },
+    "info": {
+      "loading": {
+        "id": "payment.generic.loading",
+        "title": "Loading",
+        "body": "Please wait while the requested payment information is prepared.",
+        "severity": "info"
+      },
+      "empty": {
+        "id": "payment.generic.empty",
+        "title": "Nothing to display",
+        "body": "There are no payments to show for the current view. Actions taken in this demo will appear here.",
+        "severity": "info"
+      }
+    }
+  },
+  "retry": {
+    "retryable": {
+      "id": "payment.retry.retryable",
+      "title": "You can retry",
+      "body": "This action did not complete but can be retried safely. No changes were made — try again when ready.",
+      "action_label": "Retry",
+      "severity": "warning"
+    },
+    "notRetryable": {
+      "id": "payment.retry.not_retryable",
+      "title": "This action cannot be retried",
+      "body": "This outcome is final and cannot be retried. Review the details and, if appropriate, start a new request.",
+      "action_label": "Start again",
+      "severity": "info"
+    },
+    "limitReached": {
+      "id": "payment.retry.limit_reached",
+      "title": "Retry limit reached",
+      "body": "You have used all available retry attempts for this action in the demo. This limit is enforced client-side only and is not a server guarantee.",
+      "action_label": "Return",
+      "severity": "warning"
+    }
+  }
+}
