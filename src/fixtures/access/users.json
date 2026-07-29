@@ -18,8 +18,7 @@
       "default_route": "/payments/new",
       "credential_hint": {
         "username": "i.demo",
-        "passcode": "demo-initiator-2026",
-        "note": "Non-production demo credential — fake data only."
+        "passcode": "demo-initiator-2026"
       },
       "created_at": "2026-06-28T09:00:00.000Z",
       "last_active_at": "2026-07-27T16:30:00.000Z"
@@ -38,8 +37,7 @@
       "default_route": "/approvals",
       "credential_hint": {
         "username": "a.demo",
-        "passcode": "demo-approver-2026",
-        "note": "Non-production demo credential — fake data only."
+        "passcode": "demo-approver-2026"
       },
       "created_at": "2026-06-28T09:05:00.000Z",
       "last_active_at": "2026-07-28T08:15:00.000Z"
@@ -58,8 +56,7 @@
       "default_route": "/operations",
       "credential_hint": {
         "username": "o.demo",
-        "passcode": "demo-operator-2026",
-        "note": "Non-production demo credential — fake data only."
+        "passcode": "demo-operator-2026"
       },
       "created_at": "2026-06-28T09:10:00.000Z",
       "last_active_at": "2026-07-27T11:45:00.000Z"
@@ -78,8 +75,7 @@
       "default_route": "/signers",
       "credential_hint": {
         "username": "c.demo",
-        "passcode": "demo-controlling-2026",
-        "note": "Non-production demo credential — fake data only."
+        "passcode": "demo-controlling-2026"
       },
       "created_at": "2026-06-28T09:15:00.000Z",
       "last_active_at": "2026-07-26T14:20:00.000Z"
@@ -98,8 +94,7 @@
       "default_route": "/audit",
       "credential_hint": {
         "username": "d.demo",
-        "passcode": "demo-auditor-2026",
-        "note": "Non-production demo credential — fake data only."
+        "passcode": "demo-auditor-2026"
       },
       "created_at": "2026-06-28T09:20:00.000Z",
       "last_active_at": "2026-07-28T07:50:00.000Z"

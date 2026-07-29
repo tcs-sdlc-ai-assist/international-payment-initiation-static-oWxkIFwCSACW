@@ -301,9 +301,45 @@ export function PaymentForm({
       remittance_information: toText(source.remittance_information),
       purpose_code: toText(source.purpose_code),
       charge_treatment: toText(source.charge_treatment) || toText(chargeTreatment),
+      uetr: toText(source.uetr),
     };
     return values;
   }, [initialValues, chargeTreatment]);
+
+  // Builds the schema fresh from the values being validated (not a frozen
+  // initial snapshot), so requirements conditional on live form state — e.g.
+  // debtor_street vs. debtor_address_line, or purpose_code vs.
+  // charge_treatment — resolve against what the user actually entered.
+  // A memoized schema built once from `defaultValues` would otherwise freeze
+  // both address fields as mandatory (each is "required when the other is
+  // absent", and both start absent), permanently blocking submission no
+  // matter which address mode the user fills in.
+  const resolver = useCallback(
+    (values, context, options) => {
+      const resolved = cbprValidator.resolveRuleSet(selector);
+      const built = cbprValidator.buildSchema(isPlainObject(resolved) ? resolved : {}, values);
+      return zodResolver(built.schema)(values, context, options);
+    },
+    [selector],
+  );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm({
+    resolver,
+    defaultValues,
+    mode: 'onSubmit',
+  });
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues, reset]);
 
   // Seed a demo-safe mock UETR only when the resolved rule set actually
   // requires one; otherwise leave it unset so the field reflects the rule
@@ -312,10 +348,12 @@ export function PaymentForm({
     const initialUetr = toText(isPlainObject(initialValues) ? initialValues.uetr : '');
     if (initialUetr.length > 0) {
       setUetr(initialUetr);
+      setValue('uetr', initialUetr);
       return;
     }
     if (!ruleSetRequiresUetr) {
       setUetr('');
+      setValue('uetr', '');
       return;
     }
     let generated = '';
@@ -328,7 +366,8 @@ export function PaymentForm({
       generated = '';
     }
     setUetr(generated);
-  }, [initialValues, resolvedRuleSetId, ruleSetRequiresUetr]);
+    setValue('uetr', generated);
+  }, [initialValues, resolvedRuleSetId, ruleSetRequiresUetr, setValue]);
 
   /**
    * Resolves the current form values merged with the address-mode selection and
@@ -360,33 +399,6 @@ export function PaymentForm({
     [addressMode, uetr],
   );
 
-  const schema = useMemo(() => {
-    const resolved = cbprValidator.resolveRuleSet(selector);
-    if (!isPlainObject(resolved)) {
-      const built = cbprValidator.buildSchema({});
-      return built.schema;
-    }
-    const built = cbprValidator.buildSchema(resolved, defaultValues);
-    return built.schema;
-  }, [selector, defaultValues]);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setError,
-    clearErrors,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues,
-    mode: 'onSubmit',
-  });
-
-  useEffect(() => {
-    reset(defaultValues);
-  }, [defaultValues, reset]);
-
   const announce = useCallback(
     (severity, title, body) => {
       try {
@@ -411,13 +423,15 @@ export function PaymentForm({
 
   const handleRegenerateUetr = useCallback(() => {
     try {
-      setUetr(cbprValidator.generateUetr());
+      const generated = cbprValidator.generateUetr();
+      setUetr(generated);
+      setValue('uetr', generated);
     } catch (error) {
       safeLogger.warn('PaymentForm: failed to regenerate mock UETR', {
         reason: error instanceof Error ? error.name : 'unknown',
       });
     }
-  }, []);
+  }, [setValue]);
 
   const onSubmit = useCallback(
     (values) => {
@@ -454,7 +468,7 @@ export function PaymentForm({
           if (isPlainObject(issue) && toText(issue.field).length > 0) {
             setError(issue.field, {
               type: 'manual',
-              message: messageForReason(toText(issue.safeReasonCode)),
+              message: toText(issue.safeReasonCode),
             });
           }
         }
@@ -726,6 +740,7 @@ export function PaymentForm({
                   className={CONTROL_CLASSES}
                   value={uetr}
                   {...attrs}
+                  {...register('uetr')}
                 />
               )}
             </FormField>
