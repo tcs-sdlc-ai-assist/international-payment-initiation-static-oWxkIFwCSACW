@@ -15,6 +15,12 @@
  * mutates application state.
  */
 
+/*
+
+
+
+*/
+
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { CAPABILITIES } from '@/shared/config/constants';
 import { RouteGuard } from '@/app/RouteGuard';
