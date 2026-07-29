@@ -355,6 +355,34 @@ export function touch() {
 }
 
 /**
+ * Re-evaluates and notifies the current session lifecycle status without
+ * treating the call itself as user activity.
+ *
+ * Unlike {@link touch}, this never extends `expiresAt`. It exists so callers
+ * that need to periodically re-render lifecycle transitions (active → warning
+ * → expired) — e.g. a UI poll driving a countdown or warning modal — can do so
+ * without inadvertently resetting the inactivity timer on every poll tick.
+ * Genuine activity (e.g. an explicit "stay signed in" action) should call
+ * {@link touch} instead.
+ *
+ * @returns {string} The current lifecycle status.
+ */
+export function peekStatus() {
+  const claim = getSession();
+  if (!claim) {
+    return SESSION_STATUS.NONE;
+  }
+  const status = computeStatus(claim);
+  if (status === SESSION_STATUS.EXPIRED) {
+    // getSession() already purges and notifies expired sessions; nothing
+    // further to do here.
+    return SESSION_STATUS.EXPIRED;
+  }
+  notify(status, null);
+  return status;
+}
+
+/**
  * Clears the persisted session and notifies subscribers.
  * @param {string} [safeReasonCode] - Optional sanitized reason code.
  * @returns {void}
@@ -396,6 +424,7 @@ const ListenerSchema = z.function();
  * @type {{
  *   getSession: typeof getSession,
  *   touch: typeof touch,
+ *   peekStatus: typeof peekStatus,
  *   logout: typeof logout,
  *   subscribe: typeof subscribe,
  *   startSession: typeof startSession,
@@ -409,6 +438,7 @@ const ListenerSchema = z.function();
 export const sessionFacade = Object.freeze({
   getSession,
   touch,
+  peekStatus,
   logout,
   subscribe,
   startSession,

@@ -86,21 +86,21 @@ describe('authorizationPolicy.allowedNavigation', () => {
     const items = allowedNavigation(session);
     const routes = items.map((item) => item.route);
     expect(routes).toContain('/payments/new');
-    expect(routes).not.toContain('/payments/approvals');
+    expect(routes).not.toContain('/approvals');
     expect(routes).not.toContain('/signers');
   });
 
   it('returns the approval navigation for an approver', () => {
     const session = buildSession({ roles: [ROLES.APPROVER] });
     const routes = allowedNavigation(session).map((item) => item.route);
-    expect(routes).toContain('/payments/approvals');
+    expect(routes).toContain('/approvals');
     expect(routes).not.toContain('/payments/new');
   });
 
   it('returns operations and signer navigation for an operator', () => {
     const session = buildSession({ roles: [ROLES.OPERATOR] });
     const routes = allowedNavigation(session).map((item) => item.route);
-    expect(routes).toContain('/payments/operations');
+    expect(routes).toContain('/operations');
     expect(routes).toContain('/signers');
     expect(routes).toContain('/audit');
   });

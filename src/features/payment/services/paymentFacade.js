@@ -580,6 +580,7 @@ function revalidatePreconditions(source) {
  *   paymentReference?: string,
  *   quoteRef?: string,
  *   pairId?: string,
+ *   accountId?: string,
  *   scenarioRef?: string,
  *   cbprSelector?: Record<string, unknown>,
  *   cbprDetails?: Record<string, unknown>,
@@ -657,6 +658,11 @@ export function submitPayment(session, request) {
   const scenarioRef = toText(source.scenarioRef) || undefined;
   const pairId = toText(source.pairId) || undefined;
   const quoteRef = toText(source.quoteRef) || undefined;
+  const accountId = toText(source.accountId) || undefined;
+
+  const snapshot = isPlainObject(source.snapshot) ? source.snapshot : {};
+  const pricing = isPlainObject(snapshot.pricing) ? snapshot.pricing : {};
+  const cbprDetails = isPlainObject(source.cbprDetails) ? source.cbprDetails : {};
 
   const candidate = {
     paymentId,
@@ -664,6 +670,9 @@ export function submitPayment(session, request) {
     status: LIFECYCLE_STATES.PENDING_APPROVAL,
     submittedBy: actorId ?? null,
   };
+  if (accountId !== undefined) {
+    candidate.accountId = accountId;
+  }
   if (pairId !== undefined) {
     candidate.pairId = pairId;
   }
@@ -675,6 +684,55 @@ export function submitPayment(session, request) {
   }
   if (isPlainObject(source.snapshot)) {
     candidate.snapshot = source.snapshot;
+  }
+
+  // Carry forward the accepted pricing figures and CBPR+ details so the
+  // approval, operations, and confirmation view models (which read
+  // `sourceCurrency`, `instructedAmount`, `beneficiaryName`, etc. directly off
+  // the persisted record) have real data to display rather than placeholders.
+  const rate = toText(snapshot.rate);
+  if (rate.length > 0) {
+    candidate.rate = rate;
+  }
+  const sourceCurrency = toText(pricing.sourceCurrency);
+  if (sourceCurrency.length > 0) {
+    candidate.sourceCurrency = sourceCurrency;
+    // The simulated fee is always charged in the source-currency leg.
+    candidate.feeCurrency = sourceCurrency;
+  }
+  const beneficiaryCurrency = toText(pricing.beneficiaryCurrency);
+  if (beneficiaryCurrency.length > 0) {
+    candidate.beneficiaryCurrency = beneficiaryCurrency;
+  }
+  const instructedAmount = toText(pricing.instructedValue);
+  if (instructedAmount.length > 0) {
+    candidate.instructedAmount = instructedAmount;
+  }
+  const settlementAmount = toText(pricing.settlementValue);
+  if (settlementAmount.length > 0) {
+    candidate.settlementAmount = settlementAmount;
+  }
+  const feeAmount = toText(pricing.feeValue);
+  if (feeAmount.length > 0) {
+    candidate.feeAmount = feeAmount;
+  }
+  const chargeTreatment = toText(pricing.chargeTreatment);
+  if (chargeTreatment.length > 0) {
+    candidate.chargeTreatment = chargeTreatment;
+  }
+  const beneficiaryName = toText(cbprDetails.creditor_name);
+  if (beneficiaryName.length > 0) {
+    // Stored unmasked, matching the seed fixture convention: masking is
+    // applied at read time by the lifecycle/operations/approval view models.
+    candidate.beneficiaryName = beneficiaryName;
+  }
+  const remittanceInfo = toText(cbprDetails.remittance_information);
+  if (remittanceInfo.length > 0) {
+    candidate.remittanceInfo = remittanceInfo;
+  }
+  const uetr = toText(cbprDetails.uetr);
+  if (uetr.length > 0) {
+    candidate.uetr = uetr;
   }
 
   const saved = repository.saveRecord(candidate);

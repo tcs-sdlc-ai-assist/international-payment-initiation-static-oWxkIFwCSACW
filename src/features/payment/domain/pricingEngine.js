@@ -20,8 +20,10 @@
  *      beneficiary settlement precision using deterministic rounding.
  *   6. Fee calculation — the fee is computed from the tier (flat / percentage /
  *      hybrid), bounded by the tier's min/max caps.
- *   7. BEN deduction — for BEN charge treatment the fee is deducted from the
- *      transfer amount so the beneficiary bears the charge.
+ *   7. BEN deduction — for BEN charge treatment the fee is converted into the
+ *      beneficiary currency and deducted from the converted settlement amount
+ *      so the beneficiary actually receives less; the fee is then displayed
+ *      in the beneficiary currency rather than the source currency.
  *   8. Total debit — the instructed amount plus any sender-borne fee legs are
  *      summed into the total debit in the source currency.
  *
@@ -336,6 +338,7 @@ function computeRawFee(tier, instructedMinor, precision, roundingMode) {
  *     transferValue: string,
  *     feeMinor: number,
  *     feeValue: string,
+ *     feeCurrency: string,
  *     totalDebitMinor: number,
  *     totalDebitValue: string,
  *     sourcePrecision: number,
@@ -411,11 +414,42 @@ export function price(request) {
   }
   const feeMinor = applyFeeCaps(selection.tier, rawFee, feePrecision);
 
-  let transferMinor = instructedMinor;
+  // The gross beneficiary-currency amount before any BEN fee deduction. This
+  // is always the full converted instructed amount, regardless of charge
+  // treatment, and is exposed as `transferValue` for provenance.
+  const transferMinor = converted.minor;
+
+  const sourceCurrencyCode = toText(pair.base_currency);
+  const beneficiaryCurrencyCode = toText(pair.quote_currency);
+
+  // For BEN, the beneficiary bears the fee: it must be expressed in the
+  // beneficiary currency (converted using the same rate) and deducted from
+  // what the beneficiary actually receives. For OUR/SHA, the fee is borne by
+  // the sender and stays denominated in the source currency, added to the
+  // total debit instead of reducing the beneficiary's receipt.
+  let settlementMinor = converted.minor;
+  let feeDisplayMinor = feeMinor;
+  let feeDisplayPrecision = feePrecision;
+  let feeCurrency = sourceCurrencyCode;
+
   if (chargeTreatment === CHARGE_TREATMENTS.BEN) {
-    transferMinor = instructedMinor - feeMinor;
-    if (transferMinor < 0) {
-      transferMinor = 0;
+    const feeConverted = moneyEngine.convert(feeMinor, {
+      rate: source.rate,
+      rateScale,
+      sourcePrecision: feePrecision,
+      beneficiaryPrecision,
+      roundingMode,
+    });
+    if (!feeConverted.ok) {
+      safeLogger.warn('pricingEngine: failed to convert BEN fee to beneficiary currency');
+      return fail(PRICING_REASON_CODES.INVALID_RATE);
+    }
+    feeDisplayMinor = feeConverted.minor;
+    feeDisplayPrecision = beneficiaryPrecision;
+    feeCurrency = beneficiaryCurrencyCode;
+    settlementMinor = converted.minor - feeConverted.minor;
+    if (settlementMinor < 0) {
+      settlementMinor = 0;
     }
   }
 
@@ -432,9 +466,9 @@ export function price(request) {
   }
 
   const instructedFormatted = moneyEngine.formatAmount(instructedMinor, sourcePrecision);
-  const settlementFormatted = moneyEngine.formatAmount(converted.minor, beneficiaryPrecision);
-  const transferFormatted = moneyEngine.formatAmount(transferMinor, sourcePrecision);
-  const feeFormatted = moneyEngine.formatAmount(feeMinor, feePrecision);
+  const settlementFormatted = moneyEngine.formatAmount(settlementMinor, beneficiaryPrecision);
+  const transferFormatted = moneyEngine.formatAmount(transferMinor, beneficiaryPrecision);
+  const feeFormatted = moneyEngine.formatAmount(feeDisplayMinor, feeDisplayPrecision);
 
   if (
     !instructedFormatted.ok ||
@@ -457,16 +491,17 @@ export function price(request) {
     pricing: {
       pairId,
       chargeTreatment,
-      sourceCurrency: toText(pair.base_currency),
-      beneficiaryCurrency: toText(pair.quote_currency),
+      sourceCurrency: sourceCurrencyCode,
+      beneficiaryCurrency: beneficiaryCurrencyCode,
       instructedMinor,
       instructedValue: instructedFormatted.value,
-      settlementMinor: converted.minor,
+      settlementMinor,
       settlementValue: settlementFormatted.value,
       transferMinor,
       transferValue: transferFormatted.value,
-      feeMinor,
+      feeMinor: feeDisplayMinor,
       feeValue: feeFormatted.value,
+      feeCurrency,
       totalDebitMinor: totalDebit.minor,
       totalDebitValue: totalDebit.value,
       sourcePrecision,

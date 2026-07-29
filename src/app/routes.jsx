@@ -26,14 +26,19 @@ import { SignerDetailPage } from '@/features/access/pages/SignerDetailPage';
 import { SignerEditPage } from '@/features/access/pages/SignerEditPage';
 import { AuditHistoryPage } from '@/features/access/pages/AuditHistoryPage';
 import { ClearDataPage } from '@/features/access/pages/ClearDataPage';
-import { AccountSelectionPage } from '@/features/payment/pages/AccountSelectionPage';
-import { QuotePage } from '@/features/payment/pages/QuotePage';
-import { PaymentForm } from '@/features/payment/pages/PaymentForm';
-import { BeneficiaryValidationPage } from '@/features/payment/pages/BeneficiaryValidationPage';
-import { ReviewSubmitPage } from '@/features/payment/pages/ReviewSubmitPage';
-import { ConfirmationPage } from '@/features/payment/pages/ConfirmationPage';
+import {
+  PaymentFlow,
+  NewPaymentStep,
+  QuoteStep,
+  DetailsStep,
+  ValidateStep,
+  ReviewStep,
+  ConfirmationStep,
+} from '@/features/payment/pages/PaymentFlow';
 import { ApprovalQueuePage } from '@/features/payment/pages/ApprovalQueuePage';
+import { ApprovalDetailPage } from '@/features/payment/pages/ApprovalDetailPage';
 import { OperationsPage } from '@/features/payment/pages/OperationsPage';
+import { OperationsDetailPage } from '@/features/payment/pages/OperationsDetailPage';
 
 /** Login route rendered outside the authenticated shell. */
 export const LOGIN_ROUTE = '/login';
@@ -93,10 +98,22 @@ export const PROTECTED_ROUTES = Object.freeze([
     label: 'Approvals',
   },
   {
+    path: '/approvals/:paymentId',
+    capability: CAPABILITIES.PAYMENT_APPROVE,
+    exact: true,
+    label: 'Review payment',
+  },
+  {
     path: '/operations',
     capability: CAPABILITIES.PAYMENT_OPERATE,
     exact: true,
     label: 'Operations',
+  },
+  {
+    path: '/operations/:paymentId',
+    capability: CAPABILITIES.PAYMENT_OPERATE,
+    exact: true,
+    label: 'Review payment',
   },
   {
     path: '/signers',
@@ -148,53 +165,20 @@ export function AppRoutes() {
 
       <Route element={<AppShell />}>
         <Route
-          path="/payments/new"
+          path="/payments"
           element={
             <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <AccountSelectionPage />
+              <PaymentFlow />
             </RouteGuard>
           }
-        />
-        <Route
-          path="/payments/quote"
-          element={
-            <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <QuotePage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/payments/details"
-          element={
-            <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <PaymentForm />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/payments/validate"
-          element={
-            <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <BeneficiaryValidationPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/payments/review"
-          element={
-            <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <ReviewSubmitPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/payments/confirmation/:id"
-          element={
-            <RouteGuard capability={CAPABILITIES.PAYMENT_INITIATE}>
-              <ConfirmationPage />
-            </RouteGuard>
-          }
-        />
+        >
+          <Route path="new" element={<NewPaymentStep />} />
+          <Route path="quote" element={<QuoteStep />} />
+          <Route path="details" element={<DetailsStep />} />
+          <Route path="validate" element={<ValidateStep />} />
+          <Route path="review" element={<ReviewStep />} />
+          <Route path="confirmation/:id" element={<ConfirmationStep />} />
+        </Route>
 
         <Route
           path="/approvals"
@@ -205,10 +189,26 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="/approvals/:paymentId"
+          element={
+            <RouteGuard capability={CAPABILITIES.PAYMENT_APPROVE}>
+              <ApprovalDetailPage />
+            </RouteGuard>
+          }
+        />
+        <Route
           path="/operations"
           element={
             <RouteGuard capability={CAPABILITIES.PAYMENT_OPERATE}>
               <OperationsPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/operations/:paymentId"
+          element={
+            <RouteGuard capability={CAPABILITIES.PAYMENT_OPERATE}>
+              <OperationsDetailPage />
             </RouteGuard>
           }
         />

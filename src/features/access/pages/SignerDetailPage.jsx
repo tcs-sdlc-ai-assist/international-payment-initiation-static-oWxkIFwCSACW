@@ -22,6 +22,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAccessContext } from '@/app/useAccessContext';
 import { signerService } from '@/features/access/services/signerService';
 import { signerPolicy } from '@/features/access/services/signerPolicy';
+import { SignerActions } from '@/features/access/pages/SignerActions';
 import { CAPABILITIES } from '@/shared/config/constants';
 import { Alert, ALERT_SEVERITIES } from '@/shared/ui/Alert';
 import { Button } from '@/shared/ui/Button';
@@ -197,11 +198,7 @@ export function SignerDetailPage() {
 
   const canManage = useMemo(() => hasManageCapability(sessionIdentity), [sessionIdentity]);
 
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setNotFound(false);
-
+  const loadSigner = useCallback(() => {
     const claim = toSessionClaim(sessionIdentity);
     const context = toText(maskingPolicy) || undefined;
     const id = toText(signerId);
@@ -214,10 +211,6 @@ export function SignerDetailPage() {
         reason: error instanceof Error ? error.name : 'unknown',
       });
       result = { ok: false, safeReasonCode: 'signer.service.unexpected' };
-    }
-
-    if (!active) {
-      return;
     }
 
     if (result.ok) {
@@ -235,11 +228,17 @@ export function SignerDetailPage() {
       setSigner(null);
     }
     setLoading(false);
-
-    return () => {
-      active = false;
-    };
   }, [sessionIdentity, maskingPolicy, accountScopes, signerId]);
+
+  useEffect(() => {
+    setLoading(true);
+    setNotFound(false);
+    loadSigner();
+  }, [loadSigner]);
+
+  const handleActionCompleted = useCallback(() => {
+    loadSigner();
+  }, [loadSigner]);
 
   const handleBack = useCallback(() => {
     navigate('/signers');
@@ -258,16 +257,6 @@ export function SignerDetailPage() {
       signerPolicy.canEditField(signer, field),
     );
   }, [canManage, signer]);
-
-  const canUnlock = useMemo(
-    () => (canManage && isPlainObject(signer) ? signerPolicy.canUnlock(signer) : false),
-    [canManage, signer],
-  );
-
-  const canResend = useMemo(
-    () => (canManage && isPlainObject(signer) ? signerPolicy.canResend(signer) : false),
-    [canManage, signer],
-  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -367,39 +356,23 @@ export function SignerDetailPage() {
               </p>
             </div>
 
-            {canManage && (canEdit || canUnlock || canResend) ? (
+            {canManage && canEdit ? (
               <div className="flex flex-wrap items-center gap-2">
-                {canEdit ? (
-                  <Link
-                    to={`/signers/${toText(signer.signer_id)}/edit`}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-primary-blue-500 bg-white px-3 py-1.5 text-sm font-medium text-primary-blue-700 transition-colors hover:bg-primary-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-2"
-                  >
-                    Edit entitlements
-                  </Link>
-                ) : null}
-                {canUnlock ? (
-                  <Link
-                    to={`/signers/${toText(signer.signer_id)}/unlock`}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-primary-blue-500 bg-white px-3 py-1.5 text-sm font-medium text-primary-blue-700 transition-colors hover:bg-primary-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-2"
-                  >
-                    Unlock signer
-                  </Link>
-                ) : null}
-                {canResend ? (
-                  <Link
-                    to={`/signers/${toText(signer.signer_id)}/resend`}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-primary-blue-500 bg-white px-3 py-1.5 text-sm font-medium text-primary-blue-700 transition-colors hover:bg-primary-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-2"
-                  >
-                    Resend invitation
-                  </Link>
-                ) : null}
+                <Link
+                  to={`/signers/${toText(signer.signer_id)}/edit`}
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-primary-blue-500 bg-white px-3 py-1.5 text-sm font-medium text-primary-blue-700 transition-colors hover:bg-primary-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-2"
+                >
+                  Edit entitlements
+                </Link>
               </div>
-            ) : (
+            ) : !canManage ? (
               <p className="text-sm text-body">
                 No management actions are available for this signer with your current role.
               </p>
-            )}
+            ) : null}
           </section>
+
+          <SignerActions signer={signer} onCompleted={handleActionCompleted} />
 
           <section
             aria-labelledby="signer-audit-heading"

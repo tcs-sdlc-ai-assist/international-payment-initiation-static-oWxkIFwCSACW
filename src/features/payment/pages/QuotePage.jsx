@@ -156,6 +156,14 @@ export function QuotePage({
   const [acceptError, setAcceptError] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [snapshot, setSnapshot] = useState(null);
+  // Tracks the amount/mode/charge-treatment combination that produced the
+  // currently-displayed quote, so acceptance prices exactly what the user is
+  // looking at rather than silently reverting to the default sample amount.
+  const [pricingParams, setPricingParams] = useState({
+    amount: undefined,
+    amountMode: quoteFacade.AMOUNT_MODES.SOURCE,
+    chargeTreatment: 'SHA',
+  });
 
   const session = useMemo(() => toSessionClaim(sessionIdentity), [sessionIdentity]);
 
@@ -164,6 +172,33 @@ export function QuotePage({
     () => toText(beneficiaryCurrency),
     [beneficiaryCurrency],
   );
+
+  // Resolve the selected account's fee-tier dimensions (customer segment,
+  // product, channel) so local tiers can vary by source account rather than
+  // always falling back to the generic default tier.
+  const dimensions = useMemo(() => {
+    const id = toText(accountId);
+    if (id.length === 0) {
+      return undefined;
+    }
+    let account;
+    try {
+      account = fixtureRegistry.getAccountById(id);
+    } catch (error) {
+      safeLogger.warn('QuotePage: failed to resolve account fee-tier dimensions', {
+        reason: error instanceof Error ? error.name : 'unknown',
+      });
+      return undefined;
+    }
+    if (!isPlainObject(account)) {
+      return undefined;
+    }
+    return {
+      segment: toText(account.customer_segment),
+      product: toText(account.product),
+      channel: toText(account.channel),
+    };
+  }, [accountId]);
 
   const announce = useCallback(
     (severity, title, body) => {
@@ -178,12 +213,17 @@ export function QuotePage({
     [notify],
   );
 
-  // Re-seed the quote reference when the selected pair changes.
+  // Re-seed the quote reference and pricing params when the selected pair changes.
   useEffect(() => {
     setQuoteRef(resolveInitialQuoteRef(pairId));
     setSnapshot(null);
     setStatusMessage('');
     setAcceptError('');
+    setPricingParams({
+      amount: undefined,
+      amountMode: quoteFacade.AMOUNT_MODES.SOURCE,
+      chargeTreatment: 'SHA',
+    });
   }, [pairId]);
 
   // Request the initial quote whenever the resolved quote reference changes.
@@ -203,9 +243,17 @@ export function QuotePage({
       };
     }
 
+    // A fresh (or pair-changed) quote request always starts from the default
+    // sample amount/mode/treatment; `pricingParams` is reset alongside
+    // `quoteRef` above and only diverges once the user recalculates.
     let result;
     try {
-      result = quoteFacade.requestQuote(session, { quoteRef });
+      result = quoteFacade.requestQuote(session, {
+        quoteRef,
+        amountMode: quoteFacade.AMOUNT_MODES.SOURCE,
+        chargeTreatment: 'SHA',
+        dimensions,
+      });
     } catch (error) {
       safeLogger.warn('QuotePage: failed to request quote', {
         reason: error instanceof Error ? error.name : 'unknown',
@@ -236,7 +284,7 @@ export function QuotePage({
     return () => {
       active = false;
     };
-  }, [quoteRef, session]);
+  }, [quoteRef, session, dimensions]);
 
   const handleRecalculate = useCallback(
     (request) => {
@@ -245,6 +293,11 @@ export function QuotePage({
       }
 
       const source = isPlainObject(request) ? request : {};
+      const nextParams = {
+        amount: source.amount,
+        amountMode: source.amountMode,
+        chargeTreatment: source.chargeTreatment,
+      };
 
       setRecalculating(true);
       setAcceptError('');
@@ -255,8 +308,10 @@ export function QuotePage({
       try {
         result = quoteFacade.recalculateQuote(session, {
           quoteRef,
-          amount: source.amount,
-          amountMode: source.amountMode,
+          amount: nextParams.amount,
+          amountMode: nextParams.amountMode,
+          chargeTreatment: nextParams.chargeTreatment,
+          dimensions,
         });
       } catch (error) {
         safeLogger.warn('QuotePage: failed to recalculate quote', {
@@ -272,6 +327,10 @@ export function QuotePage({
 
       if (result.ok) {
         setQuote(isPlainObject(result.quote) ? result.quote : null);
+        // Remember exactly what produced this quote so accepting it (or a
+        // re-quote after expiry) prices the same amount/mode/treatment the
+        // user is currently looking at, rather than the default sample amount.
+        setPricingParams(nextParams);
       } else {
         setAcceptError(
           'The quote could not be recalculated with the supplied amount. Check the amount and try again.',
@@ -283,7 +342,7 @@ export function QuotePage({
         );
       }
     },
-    [recalculating, quoteRef, session, announce, NOTIFICATION_SEVERITIES],
+    [recalculating, quoteRef, session, dimensions, announce, NOTIFICATION_SEVERITIES],
   );
 
   const handleAccept = useCallback(() => {
@@ -295,9 +354,18 @@ export function QuotePage({
     setAcceptError('');
     setStatusMessage('');
 
+    // Accept exactly what is currently displayed: the amount/mode/treatment
+    // from the last successful request/recalculation, not the default sample
+    // amount, so the stored acceptance snapshot matches what the user saw.
     let result;
     try {
-      result = quoteFacade.acceptQuote(session, { quoteRef });
+      result = quoteFacade.acceptQuote(session, {
+        quoteRef,
+        amount: pricingParams.amount,
+        amountMode: pricingParams.amountMode,
+        chargeTreatment: pricingParams.chargeTreatment,
+        dimensions,
+      });
     } catch (error) {
       safeLogger.warn('QuotePage: failed to accept quote', {
         reason: error instanceof Error ? error.name : 'unknown',
@@ -360,6 +428,8 @@ export function QuotePage({
     session,
     accountId,
     pairId,
+    pricingParams,
+    dimensions,
     onContinue,
     announce,
     NOTIFICATION_SEVERITIES,

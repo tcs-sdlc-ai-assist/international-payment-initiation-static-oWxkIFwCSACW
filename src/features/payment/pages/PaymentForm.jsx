@@ -34,6 +34,7 @@ import { useAccessContext } from '@/app/useAccessContext';
 import { useNotifications } from '@/app/NotificationContext';
 import { cbprValidator, CBPR_REASON_CODES } from '@/features/payment/domain/cbprValidator';
 import { paymentFacade } from '@/features/payment/services/paymentFacade';
+import { ISO_COUNTRIES } from '@/shared/config/countries';
 import { Alert, ALERT_SEVERITIES } from '@/shared/ui/Alert';
 import { Button } from '@/shared/ui/Button';
 import { FormField } from '@/shared/ui/FormField';
@@ -269,10 +270,17 @@ export function PaymentForm({
 
   const session = useMemo(() => toSessionClaim(sessionIdentity), [sessionIdentity]);
 
-  const resolvedRuleSetId = useMemo(() => {
-    const resolved = cbprValidator.resolveRuleSet(selector);
-    return isPlainObject(resolved) ? toText(resolved.rule_set_id) || null : null;
-  }, [selector]);
+  const resolvedRuleSet = useMemo(() => cbprValidator.resolveRuleSet(selector), [selector]);
+
+  const resolvedRuleSetId = useMemo(
+    () => (isPlainObject(resolvedRuleSet) ? toText(resolvedRuleSet.rule_set_id) || null : null),
+    [resolvedRuleSet],
+  );
+
+  const ruleSetRequiresUetr = useMemo(
+    () => isPlainObject(resolvedRuleSet) && cbprValidator.requiresUetr(resolvedRuleSet),
+    [resolvedRuleSet],
+  );
 
   const defaultValues = useMemo(() => {
     const source = isPlainObject(initialValues) ? initialValues : {};
@@ -297,8 +305,19 @@ export function PaymentForm({
     return values;
   }, [initialValues, chargeTreatment]);
 
-  // Seed a demo-safe mock UETR when the rule set requires one.
+  // Seed a demo-safe mock UETR only when the resolved rule set actually
+  // requires one; otherwise leave it unset so the field reflects the rule
+  // set that is genuinely applicable.
   useEffect(() => {
+    const initialUetr = toText(isPlainObject(initialValues) ? initialValues.uetr : '');
+    if (initialUetr.length > 0) {
+      setUetr(initialUetr);
+      return;
+    }
+    if (!ruleSetRequiresUetr) {
+      setUetr('');
+      return;
+    }
     let generated = '';
     try {
       generated = cbprValidator.generateUetr();
@@ -308,9 +327,8 @@ export function PaymentForm({
       });
       generated = '';
     }
-    const initialUetr = toText(isPlainObject(initialValues) ? initialValues.uetr : '');
-    setUetr(initialUetr.length > 0 ? initialUetr : generated);
-  }, [initialValues, resolvedRuleSetId]);
+    setUetr(generated);
+  }, [initialValues, resolvedRuleSetId, ruleSetRequiresUetr]);
 
   /**
    * Resolves the current form values merged with the address-mode selection and
@@ -570,7 +588,7 @@ export function PaymentForm({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {group.fields.map((descriptor) => {
                 const errorMessage = errors[descriptor.field]
-                  ? errors[descriptor.field].message
+                  ? messageForReason(errors[descriptor.field].message)
                   : undefined;
 
                 return (
@@ -579,16 +597,32 @@ export function PaymentForm({
                     label={descriptor.label}
                     error={errorMessage}
                   >
-                    {(attrs) => (
-                      <input
-                        type="text"
-                        autoComplete="off"
-                        disabled={submitting}
-                        className={CONTROL_CLASSES}
-                        {...attrs}
-                        {...register(descriptor.field)}
-                      />
-                    )}
+                    {(attrs) =>
+                      descriptor.kind === 'country' ? (
+                        <select
+                          disabled={submitting}
+                          className={CONTROL_CLASSES}
+                          {...attrs}
+                          {...register(descriptor.field)}
+                        >
+                          <option value="">Select a country</option>
+                          {ISO_COUNTRIES.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              {country.label} ({country.code})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          autoComplete="off"
+                          disabled={submitting}
+                          className={CONTROL_CLASSES}
+                          {...attrs}
+                          {...register(descriptor.field)}
+                        />
+                      )
+                    }
                   </FormField>
                 );
               })}
@@ -626,7 +660,7 @@ export function PaymentForm({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {addressFields.map((field) => {
-              const errorMessage = errors[field] ? errors[field].message : undefined;
+              const errorMessage = errors[field] ? messageForReason(errors[field].message) : undefined;
               const label =
                 field === 'debtor_address_line'
                   ? 'Address line'

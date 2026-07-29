@@ -398,6 +398,8 @@ export function BeneficiaryValidationPage({ scenarioRef, onValidated }) {
           verificationStatus: resolvedValidation ? toText(resolvedValidation.verificationStatus) : '',
           scenarioRef: resolvedValidation ? toText(resolvedValidation.scenarioRef) : selectedScenario,
           safeReasonCode: resolvedDisposition.safeReasonCode,
+          validationRecord: resolvedValidation,
+          dispositionRecord: resolvedDisposition,
         });
       }
       return;
@@ -411,6 +413,16 @@ export function BeneficiaryValidationPage({ scenarioRef, onValidated }) {
         NOTIFICATION_SEVERITIES.WARNING,
         'Confirm beneficiary details',
         'The account identifiers matched, but the name-on-account is only a close match. Capture an override reason to continue.',
+      );
+      return;
+    }
+
+    if (resolvedValidation && toText(resolvedValidation.outcome) === 'unavailable') {
+      announce(
+        NOTIFICATION_SEVERITIES.WARNING,
+        resolvedValidation.nextStep?.title || 'Validation unavailable',
+        resolvedValidation.nextStep?.body ||
+          'The beneficiary validation service is temporarily unavailable. Try again shortly.',
       );
       return;
     }
@@ -478,6 +490,8 @@ export function BeneficiaryValidationPage({ scenarioRef, onValidated }) {
           verificationStatus: toText(validation.verificationStatus),
           scenarioRef: toText(validation.scenarioRef) || selectedScenario,
           safeReasonCode: result.safeReasonCode,
+          validationRecord: validation,
+          dispositionRecord: isPlainObject(result.disposition) ? result.disposition : disposition,
         });
       }
       return;
@@ -528,6 +542,17 @@ export function BeneficiaryValidationPage({ scenarioRef, onValidated }) {
   const isAllowed = useMemo(
     () => isPlainObject(disposition) && disposition.disposition === POLICY_DISPOSITIONS.ALLOW,
     [disposition],
+  );
+
+  // The "unavailable" outcome (the simulated Bankcheck service being
+  // temporarily down) is a distinct, recoverable state from a genuine
+  // validation failure (name mismatch, invalid IBAN/BIC, account not found).
+  // Both currently resolve to the same BLOCK disposition, so this flag lets
+  // the UI surface the scenario's own next-step copy instead of collapsing
+  // every blocked outcome into one identical "blocked" message.
+  const isUnavailable = useMemo(
+    () => isPlainObject(validation) && toText(validation.outcome) === 'unavailable',
+    [validation],
   );
 
   const nameError = useMemo(
@@ -708,10 +733,23 @@ export function BeneficiaryValidationPage({ scenarioRef, onValidated }) {
             </Alert>
           ) : null}
 
-          {isBlocked ? (
-            <Alert severity={ALERT_SEVERITIES.CRITICAL} title="Beneficiary blocked">
-              The beneficiary could not be validated and cannot be used for this payment. Correct
-              the details and validate again.
+          {isBlocked && isUnavailable ? (
+            <Alert
+              severity={ALERT_SEVERITIES.WARNING}
+              title={validation?.nextStep?.title || 'Validation unavailable'}
+            >
+              {validation?.nextStep?.body ||
+                'The beneficiary validation service is temporarily unavailable. Wait a moment and try validating again.'}
+            </Alert>
+          ) : null}
+
+          {isBlocked && !isUnavailable ? (
+            <Alert
+              severity={ALERT_SEVERITIES.CRITICAL}
+              title={validation?.nextStep?.title || 'Beneficiary blocked'}
+            >
+              {validation?.nextStep?.body ||
+                'The beneficiary could not be validated and cannot be used for this payment. Correct the details and validate again.'}
             </Alert>
           ) : null}
 

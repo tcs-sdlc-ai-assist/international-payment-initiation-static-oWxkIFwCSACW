@@ -47,6 +47,9 @@ const AUTHORITY_OPTIONS = Object.freeze(['sole', 'joint', 'limited']);
 /** Permitted status values for the signer edit form. */
 const STATUS_OPTIONS = Object.freeze(['active', 'suspended', 'revoked', 'pending']);
 
+/** Default eSign scenario reference applied when the page first offers the ceremony. */
+const DEFAULT_ESIGN_SCENARIO_REF = 'demo-scn-esign-success';
+
 /** Shared control class list for text/select inputs. */
 const CONTROL_CLASSES = cn(
   'rounded-md border border-primary-blue-200 px-3 py-2 text-sm text-body',
@@ -231,9 +234,21 @@ export function SignerEditPage() {
 
   const [esignPending, setEsignPending] = useState(false);
   const [esignError, setEsignError] = useState('');
+  const [esignScenarioRef, setEsignScenarioRef] = useState(DEFAULT_ESIGN_SCENARIO_REF);
 
   /** @type {React.MutableRefObject<string | null>} */
   const esignOperationRef = useRef(null);
+
+  const esignScenarios = useMemo(() => {
+    try {
+      return esignService.listScenarios();
+    } catch (error) {
+      safeLogger.warn('SignerEditPage: failed to list eSign scenarios', {
+        reason: error instanceof Error ? error.name : 'unknown',
+      });
+      return [];
+    }
+  }, []);
 
   const accountScopes = useMemo(() => resolveAccountScopes(sessionIdentity), [sessionIdentity]);
 
@@ -379,6 +394,11 @@ export function SignerEditPage() {
       setSubmitting(false);
 
       if (result.ok) {
+        // A fresh operation reference resets the eSign ceremony so a prior
+        // signature (for a superseded operation) never gates a new edit.
+        esignOperationRef.current = null;
+        setEsignError('');
+        setEsignScenarioRef(DEFAULT_ESIGN_SCENARIO_REF);
         setDiff(isPlainObject(result.diff) ? result.diff : null);
         setOperationId(toText(result.operationId));
         setStatusMessage('Your changes have been recorded and are ready to sign.');
@@ -444,6 +464,7 @@ export function SignerEditPage() {
         toSessionClaim(sessionIdentity),
         toText(signerId),
         operationId,
+        { scenarioRef: esignScenarioRef },
       );
     } catch (error) {
       safeLogger.warn('SignerEditPage: failed to complete eSign', {
@@ -466,14 +487,27 @@ export function SignerEditPage() {
         'The change has been signed and recorded.',
       );
     } else {
-      setEsignError('The change could not be signed. You can review the details and try again.');
-      announce(
-        NOTIFICATION_SEVERITIES.WARNING,
-        'Signature unavailable',
-        'The change could not be signed. You can review the details and try again.',
-      );
+      const nextStepBody =
+        isPlainObject(result.nextStep) && toText(result.nextStep.body).length > 0
+          ? toText(result.nextStep.body)
+          : 'The change could not be signed. You can review the details and try again.';
+      setEsignError(nextStepBody);
+      announce(NOTIFICATION_SEVERITIES.WARNING, 'Signature unavailable', nextStepBody);
     }
-  }, [esignPending, operationId, sessionIdentity, signerId, announce, NOTIFICATION_SEVERITIES]);
+  }, [
+    esignPending,
+    operationId,
+    esignScenarioRef,
+    sessionIdentity,
+    signerId,
+    announce,
+    NOTIFICATION_SEVERITIES,
+  ]);
+
+  const handleEsignScenarioChange = useCallback((event) => {
+    setEsignScenarioRef(event.target.value);
+    setEsignError('');
+  }, []);
 
   const changedFields = useMemo(
     () => (isPlainObject(diff) && Array.isArray(diff.fields) ? diff.fields : []),
@@ -710,6 +744,26 @@ export function SignerEditPage() {
                 </p>
               </div>
 
+              {esignScenarios.length > 0 ? (
+                <FormField label="eSign scenario">
+                  {(attrs) => (
+                    <select
+                      className={CONTROL_CLASSES}
+                      value={esignScenarioRef}
+                      disabled={esignPending || esignDone}
+                      onChange={handleEsignScenarioChange}
+                      {...attrs}
+                    >
+                      {esignScenarios.map((scenario) => (
+                        <option key={scenario.scenarioRef} value={scenario.scenarioRef}>
+                          {toLabel(scenario.outcome)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </FormField>
+              ) : null}
+
               {esignError.length > 0 ? (
                 <Alert severity={ALERT_SEVERITIES.WARNING} title="Signature unavailable">
                   {esignError}
@@ -737,8 +791,5 @@ export function SignerEditPage() {
     </div>
   );
 }
-
-// Referenced to document the simulated eSign service this page continues into.
-void esignService;
 
 export default SignerEditPage;

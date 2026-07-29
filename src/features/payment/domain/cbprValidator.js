@@ -244,21 +244,31 @@ export function resolveRuleSet(selector) {
   const jurisdiction = toText(source.jurisdiction);
   const currency = toText(source.currency);
 
-  const matched = ruleSets.find((ruleSet) => {
-    if (ruleSet.eligible !== true) {
-      return false;
-    }
-    if (scheme.length > 0 && toText(ruleSet.scheme) !== scheme) {
-      return false;
-    }
-    if (jurisdiction.length > 0 && toText(ruleSet.jurisdiction) !== jurisdiction) {
-      return false;
-    }
-    if (currency.length > 0 && toText(ruleSet.currency) !== currency) {
-      return false;
-    }
-    return true;
-  });
+  // Only attempt criteria-based matching when at least one selector criterion
+  // was actually supplied. Without this guard, an empty selector (or a
+  // `ruleSetId` that doesn't resolve, with no other criteria) would fall
+  // through to a predicate that vacuously matches every eligible rule set,
+  // silently latching onto the first one in fixture order instead of
+  // genuinely falling back to the default rule set.
+  const hasCriteria = scheme.length > 0 || jurisdiction.length > 0 || currency.length > 0;
+
+  const matched = hasCriteria
+    ? ruleSets.find((ruleSet) => {
+        if (ruleSet.eligible !== true) {
+          return false;
+        }
+        if (scheme.length > 0 && toText(ruleSet.scheme) !== scheme) {
+          return false;
+        }
+        if (jurisdiction.length > 0 && toText(ruleSet.jurisdiction) !== jurisdiction) {
+          return false;
+        }
+        if (currency.length > 0 && toText(ruleSet.currency) !== currency) {
+          return false;
+        }
+        return true;
+      })
+    : undefined;
 
   if (matched) {
     return matched;
@@ -473,8 +483,9 @@ export function generateUetr() {
  * @param {Record<string, unknown>} ruleSet - The resolved rule set.
  * @returns {boolean} `true` when a `uetr` field rule is mandatory.
  */
-function requiresUetr(ruleSet) {
-  const fieldRules = Array.isArray(ruleSet.fieldRules) ? ruleSet.fieldRules : [];
+export function requiresUetr(ruleSet) {
+  const source = isPlainObject(ruleSet) ? ruleSet : {};
+  const fieldRules = Array.isArray(source.fieldRules) ? source.fieldRules : [];
   return fieldRules.some(
     (rule) =>
       isPlainObject(rule) &&
@@ -630,6 +641,7 @@ export const cbprValidator = Object.freeze({
   buildSchema,
   validate,
   generateUetr,
+  requiresUetr,
   CBPR_REASON_CODES,
 });
 

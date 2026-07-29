@@ -10,8 +10,12 @@
  * charge treatment, and total debit). It also supports dynamic amendment:
  *
  *   - A controlled amount input in either source-amount or beneficiary-amount
- *     mode; changing the amount or mode surfaces the request to the caller via
- *     `onRecalculate` so the surrounding quote flow can re-price it.
+ *     mode, plus an OUR/SHA/BEN charge-treatment selector; changing the amount,
+ *     mode, or treatment surfaces the request to the caller via `onRecalculate`
+ *     so the surrounding quote flow can re-price it. BEN pricing deducts the fee
+ *     from the beneficiary's receipt and shows the fee in the beneficiary
+ *     currency; OUR/SHA show the fee in the source currency and add it to the
+ *     total debit instead.
  *   - A visible change indicator that highlights when the settlement amount,
  *     fee, or total debit changed since the previously-rendered quote, so a
  *     recalculation never silently shifts the figures.
@@ -233,9 +237,16 @@ export function QuoteCard({ quote, recalculating = false, onRecalculate }) {
     pricing ? toText(pricing.instructedValue) : '',
   );
   const [amountMode, setAmountMode] = useState(quoteFacade.AMOUNT_MODES.SOURCE);
+  const [selectedChargeTreatment, setSelectedChargeTreatment] = useState(chargeTreatment);
   const [countdown, setCountdown] = useState(() =>
     buildCountdown(hasQuote ? toText(quote.expiresAt) : ''),
   );
+
+  // Re-seed the selected charge treatment when a fresh quote's applied
+  // treatment differs (e.g. a new pair or an externally-driven refresh).
+  useEffect(() => {
+    setSelectedChargeTreatment(chargeTreatment);
+  }, [chargeTreatment]);
 
   /** @type {React.MutableRefObject<{ settlement: string, fee: string, total: string }>} */
   const previousFiguresRef = useRef({ settlement: '', fee: '', total: '' });
@@ -308,12 +319,20 @@ export function QuoteCard({ quote, recalculating = false, onRecalculate }) {
     setAmountMode(event.target.value);
   }, []);
 
+  const handleChargeTreatmentChange = useCallback((event) => {
+    setSelectedChargeTreatment(event.target.value);
+  }, []);
+
   const handleRecalculate = useCallback(() => {
     if (recalculating || typeof onRecalculate !== 'function') {
       return;
     }
-    onRecalculate({ amount: toText(amount), amountMode });
-  }, [recalculating, onRecalculate, amount, amountMode]);
+    onRecalculate({
+      amount: toText(amount),
+      amountMode,
+      chargeTreatment: selectedChargeTreatment,
+    });
+  }, [recalculating, onRecalculate, amount, amountMode, selectedChargeTreatment]);
 
   const rate = useMemo(() => (hasQuote ? toText(quote.rate) : ''), [hasQuote, quote]);
   const quotedLabel = useMemo(
@@ -386,7 +405,11 @@ export function QuoteCard({ quote, recalculating = false, onRecalculate }) {
         </DetailRow>
         <DetailRow label="Rate">{rate.length > 0 ? rate : '\u2014'}</DetailRow>
         <DetailRow label="Fee" changed={changedFigures.fee}>
-          {formatAmount(pricing, 'feeValue', sourceCurrency)}
+          {formatAmount(
+            pricing,
+            'feeValue',
+            toText(pricing.feeCurrency) || sourceCurrency,
+          )}
         </DetailRow>
         <DetailRow label="Total debit" changed={changedFigures.total}>
           {formatAmount(pricing, 'totalDebitValue', sourceCurrency)}
@@ -409,7 +432,7 @@ export function QuoteCard({ quote, recalculating = false, onRecalculate }) {
           <p className="text-xs text-body">{amountModeSummary}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <FormField label="Amount">
             {(attrs) => (
               <input
@@ -440,6 +463,22 @@ export function QuoteCard({ quote, recalculating = false, onRecalculate }) {
                 <option value={quoteFacade.AMOUNT_MODES.BENEFICIARY}>
                   {`Beneficiary currency${beneficiaryCurrency.length > 0 ? ` (${beneficiaryCurrency})` : ''}`}
                 </option>
+              </select>
+            )}
+          </FormField>
+
+          <FormField label="Charge treatment">
+            {(attrs) => (
+              <select
+                className={CONTROL_CLASSES}
+                value={selectedChargeTreatment}
+                disabled={recalculating}
+                onChange={handleChargeTreatmentChange}
+                {...attrs}
+              >
+                <option value="OUR">OUR — you pay all charges</option>
+                <option value="SHA">SHA — shared charges</option>
+                <option value="BEN">BEN — beneficiary pays all charges</option>
               </select>
             )}
           </FormField>

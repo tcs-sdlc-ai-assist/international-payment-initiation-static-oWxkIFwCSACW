@@ -141,6 +141,7 @@
       "remittance_info_masked": "INV•••••••",
       "safe_reason_code": null,
       "scenario_ref": "demo-scn-cbcc-accepted",
+      "submitted_by": "demo-user-approver-01",
       "created_at": "2026-07-28T08:40:00.000Z",
       "updated_at": "2026-07-28T08:40:00.000Z"
     },

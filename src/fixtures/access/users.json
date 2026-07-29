@@ -35,7 +35,7 @@
       "capabilities": ["payment:approve"],
       "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
       "masking_policy_id": "confirmation",
-      "default_route": "/payments/approvals",
+      "default_route": "/approvals",
       "credential_hint": {
         "username": "a.demo",
         "passcode": "demo-approver-2026",
@@ -55,7 +55,7 @@
       "capabilities": ["payment:operate", "signer.read"],
       "account_scopes": ["demo-acct-eur-01", "demo-acct-usd-01", "demo-acct-gbp-01"],
       "masking_policy_id": "detail",
-      "default_route": "/payments/operations",
+      "default_route": "/operations",
       "credential_hint": {
         "username": "o.demo",
         "passcode": "demo-operator-2026",

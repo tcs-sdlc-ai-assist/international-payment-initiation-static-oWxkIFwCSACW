@@ -227,9 +227,23 @@ function decimalToMinor(decimal, precision, roundingMode) {
   const baseCombined = `${integerPart}${retained}`;
   const baseMagnitude = BigInt(baseCombined.length > 0 ? baseCombined : '0');
 
+  // Compare the discarded remainder against half the divisor directly, rather
+  // than routing through `roundDivide` on the (tiny) remainder/divisor pair:
+  // that quotient is always 0 and thus always "even", so half-even ties would
+  // otherwise always round down regardless of the retained digits' parity.
+  // The correct half-even tie-break depends on whether `baseMagnitude` itself
+  // (the value actually being rounded) is odd or even.
   const divisor = 10n ** BigInt(discarded.length);
   const remainderNumerator = BigInt(discarded);
-  const roundingIncrement = roundDivide(remainderNumerator * 2n, divisor * 2n, roundingMode);
+  const twiceRemainder = remainderNumerator * 2n;
+
+  let roundingIncrement = 0n;
+  if (twiceRemainder > divisor) {
+    roundingIncrement = 1n;
+  } else if (twiceRemainder === divisor) {
+    roundingIncrement =
+      roundingMode === ROUNDING_MODES.HALF_UP || baseMagnitude % 2n !== 0n ? 1n : 0n;
+  }
   const magnitude = baseMagnitude + roundingIncrement;
 
   return negative ? -magnitude : magnitude;

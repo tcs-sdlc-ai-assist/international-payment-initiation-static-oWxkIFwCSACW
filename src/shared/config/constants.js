@@ -107,5 +107,5 @@ export const STORAGE_DOMAINS = Object.freeze({
  * @returns {string} The namespaced storage key.
  */
 export function buildStorageKey(domainKey) {
-  return `${STORAGE_NAMESPACE}:${domainKey}`;
+  return `${STORAGE_NAMESPACE}:${STORAGE_VERSION}:${domainKey}`;
 }

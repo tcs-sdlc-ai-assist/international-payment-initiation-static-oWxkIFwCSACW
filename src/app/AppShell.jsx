@@ -157,18 +157,21 @@ export function AppShell() {
     }
   }, [status]);
 
-  // Periodically re-evaluate the session lifecycle.
+  // Periodically re-evaluate the session lifecycle. This intentionally uses
+  // `peekStatus` (not `touch`) so merely having the shell mounted never counts
+  // as activity and resets the inactivity timer — otherwise the warning modal
+  // and timeout would never trigger as long as the tab stayed open.
   useEffect(() => {
     if (!isAuthenticated) {
       return undefined;
     }
     const handle = setInterval(() => {
-      touch();
+      sessionFacade.peekStatus();
     }, SESSION_POLL_MS);
     return () => {
       clearInterval(handle);
     };
-  }, [isAuthenticated, touch]);
+  }, [isAuthenticated]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-body">

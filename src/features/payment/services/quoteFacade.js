@@ -279,7 +279,11 @@ function resolveInstructedAmount(quote, request, sourcePrecision, beneficiaryPre
     if (!converted.ok) {
       return fail(QUOTE_FACADE_REASON_CODES.INVALID_AMOUNT);
     }
-    return { ok: true, instructedAmount: converted.value };
+    const convertedFormatted = moneyEngine.formatAmount(converted.minor, sourcePrecision);
+    if (!convertedFormatted.ok) {
+      return fail(QUOTE_FACADE_REASON_CODES.INVALID_AMOUNT);
+    }
+    return { ok: true, instructedAmount: convertedFormatted.value };
   }
 
   const sourceAmount = rawAmount.length > 0 ? rawAmount : DEFAULT_SOURCE_AMOUNT;
@@ -287,7 +291,11 @@ function resolveInstructedAmount(quote, request, sourcePrecision, beneficiaryPre
   if (!parsed.ok) {
     return fail(QUOTE_FACADE_REASON_CODES.INVALID_AMOUNT);
   }
-  return { ok: true, instructedAmount: parsed.value };
+  const formatted = moneyEngine.formatAmount(parsed.minor, sourcePrecision);
+  if (!formatted.ok) {
+    return fail(QUOTE_FACADE_REASON_CODES.INVALID_AMOUNT);
+  }
+  return { ok: true, instructedAmount: formatted.value };
 }
 
 /**
@@ -407,12 +415,30 @@ function toQuoteViewModel(quote, pricing, provenance) {
   };
 }
 
+/** Fixture-authored quote lifecycle state signaling an already-expired scenario. */
+const EXPIRED_QUOTE_STATE = 'expired';
+
 /**
- * Determines whether a quote is expired relative to the deterministic clock.
+ * Determines whether a quote is expired, honoring both the fixture-authored
+ * scenario state and the deterministic clock.
+ *
+ * The demo clock anchors every session to midnight of the reference date and
+ * only advances with real elapsed session time, so a quote fixture explicitly
+ * authored as an already-expired scenario (`quote_state: 'expired'`) would
+ * otherwise never be detected as expired during a normal-length session (its
+ * `expires_at` time-of-day is later than a freshly-anchored clock). Treating
+ * the fixture's own state as authoritative keeps expired-quote scenarios
+ * deterministic regardless of session timing, while live in-session expiry
+ * (a quote that goes stale after its TTL elapses) still relies on the clock.
+ *
  * @param {Record<string, unknown>} quote - The quote record.
  * @returns {boolean} `true` when the quote has expired.
  */
 function isQuoteExpired(quote) {
+  if (toText(quote.quote_state) === EXPIRED_QUOTE_STATE) {
+    return true;
+  }
+
   const expiresAt = toText(quote.expires_at);
   if (expiresAt.length === 0) {
     return true;

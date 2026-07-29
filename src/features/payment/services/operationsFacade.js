@@ -518,6 +518,13 @@ function toDetailModel(record, context) {
     ),
     quoteRef: toText(record.quote_ref) || toText(record.quoteRef) || null,
     uetr: toText(record.uetr) || null,
+    decisionComment: toText(record.decision_comment) || toText(record.decisionComment)
+      ? maskingPolicy.mask(
+          'reference',
+          toText(record.decision_comment) || toText(record.decisionComment),
+          context,
+        )
+      : null,
     checkpoints: toCheckpoints(record),
     postings: toPostings(record, context),
     swiftStatus: toSwiftStatus(record),

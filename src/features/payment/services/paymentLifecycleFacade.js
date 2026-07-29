@@ -232,6 +232,7 @@ function toDetailModel(record, context) {
   return {
     ...toSummaryModel(record, context),
     accountId: toText(record.account_id) || toText(record.accountId) || null,
+    rate: toText(record.rate) || null,
     feeAmount: toText(record.fee_amount) || toText(record.feeAmount) || null,
     feeCurrency: toText(record.fee_currency) || toText(record.feeCurrency) || null,
     chargeTreatment: toText(record.charge_treatment) || toText(record.chargeTreatment) || null,

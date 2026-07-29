@@ -34,6 +34,7 @@ import PropTypes from 'prop-types';
 import { useAccessContext } from '@/app/useAccessContext';
 import { useNotifications } from '@/app/NotificationContext';
 import { paymentFacade } from '@/features/payment/services/paymentFacade';
+import { fixtureRegistry } from '@/shared/fixtures/fixtureRegistry';
 import { MessagePreview } from '@/features/payment/pages/MessagePreview';
 import { Alert, ALERT_SEVERITIES } from '@/shared/ui/Alert';
 import { Button } from '@/shared/ui/Button';
@@ -163,16 +164,55 @@ DetailRow.propTypes = {
 };
 
 /**
+ * Resolves the route determination (serial vs. cover) for a currency pair from
+ * the bundled SWIFT scenarios fixture, falling back to the fixture's default
+ * route determination when the pair has no specific entry.
+ * @param {string} pairId - The currency pair identifier (e.g. `EUR-USD`).
+ * @returns {{ routeType: string, coverRequired: boolean }} The resolved route.
+ */
+function resolveRouteDetermination(pairId) {
+  const id = toText(pairId);
+  let determinations = [];
+  let defaultDetermination = null;
+  try {
+    const fixture = fixtureRegistry.getFixture(fixtureRegistry.FIXTURE_IDS.SWIFT_SCENARIOS);
+    determinations = Array.isArray(fixture?.routeDeterminations) ? fixture.routeDeterminations : [];
+    defaultDetermination = isPlainObject(fixture?.defaultRouteDetermination)
+      ? fixture.defaultRouteDetermination
+      : null;
+  } catch {
+    determinations = [];
+    defaultDetermination = null;
+  }
+
+  const match =
+    id.length > 0
+      ? determinations.find((determination) => toText(determination?.pair_id) === id)
+      : undefined;
+  const resolved = match || defaultDetermination;
+  if (!isPlainObject(resolved)) {
+    return { routeType: 'serial', coverRequired: false };
+  }
+  return {
+    routeType: toText(resolved.route_type) || 'serial',
+    coverRequired: resolved.cover_required === true,
+  };
+}
+
+/**
  * Builds the normalized payment aggregate used to preview the ISO 20022
  * messages from the accepted snapshot and captured CBPR+ details.
  * @param {Record<string, unknown>} snapshot - The accepted pricing snapshot.
  * @param {Record<string, unknown>} cbprDetails - The captured CBPR+ details.
  * @param {Record<string, unknown>} cbprSelector - The CBPR+ rule-set selector.
+ * @param {string} [pairId] - The currency pair identifier, when known outside the snapshot.
  * @returns {Record<string, unknown>} The normalized aggregate.
  */
-function buildAggregate(snapshot, cbprDetails, cbprSelector) {
+function buildAggregate(snapshot, cbprDetails, cbprSelector, pairId) {
   const pricing = isPlainObject(snapshot) && isPlainObject(snapshot.pricing) ? snapshot.pricing : {};
   const details = isPlainObject(cbprDetails) ? cbprDetails : {};
+  const resolvedPairId = toText(pairId) || toText(snapshot?.pairId) || toText(pricing.pairId);
+  const routing = resolveRouteDetermination(resolvedPairId);
   return {
     meta: {
       messageId: toText(snapshot.snapshotId),
@@ -204,6 +244,10 @@ function buildAggregate(snapshot, cbprDetails, cbprSelector) {
     },
     remittance: {
       unstructured: toText(details.remittance_information),
+    },
+    routing: {
+      routeType: routing.routeType,
+      coverRequired: routing.coverRequired,
     },
     cbprSelector: isPlainObject(cbprSelector) ? cbprSelector : {},
     cbprDetails: details,
@@ -282,8 +326,16 @@ export function ReviewSubmitPage({
   );
 
   const aggregate = useMemo(
-    () => (resolvedSnapshot ? buildAggregate(resolvedSnapshot, cbprDetails, cbprSelector) : null),
-    [resolvedSnapshot, cbprDetails, cbprSelector],
+    () =>
+      resolvedSnapshot
+        ? buildAggregate(
+            resolvedSnapshot,
+            cbprDetails,
+            cbprSelector,
+            toText(pairId) || toText(resolvedSnapshot.pairId),
+          )
+        : null,
+    [resolvedSnapshot, cbprDetails, cbprSelector, pairId],
   );
 
   const resolvedSourceCurrency = useMemo(
@@ -364,6 +416,7 @@ export function ReviewSubmitPage({
         paymentReference: instructionReference,
         quoteRef: toText(resolvedSnapshot.quoteRef) || undefined,
         pairId: toText(pairId) || toText(resolvedSnapshot.pairId) || undefined,
+        accountId: toText(accountId) || undefined,
         scenarioRef: toText(scenarioRef) || undefined,
         cbprSelector: isPlainObject(cbprSelector) ? cbprSelector : undefined,
         cbprDetails: isPlainObject(cbprDetails) ? cbprDetails : undefined,
@@ -457,6 +510,7 @@ export function ReviewSubmitPage({
     resolvedSnapshot,
     session,
     pairId,
+    accountId,
     scenarioRef,
     cbprSelector,
     cbprDetails,
